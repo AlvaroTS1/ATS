@@ -1,22 +1,34 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { motion, useScroll, useMotionValueEvent, useTransform } from 'framer-motion';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { CINEMATIC_FRAME_COUNT, getCinematicFramePath } from '../data/cinematic';
+import { computePinState } from '../lib/pinScrollMath';
 
-/** How many viewport-heights of scroll it takes to scrub through the whole sequence. */
-const SCROLL_LENGTH_VH = 300;
-/** Frames loaded eagerly (in parallel) before the sequence is considered ready. */
+/**
+ * Scroll distance (px) dedicated to scrubbing through the sequence while
+ * pinned — an Apple-style intro is brief (~1200–1800px), never a scroll trap.
+ */
+const PIN_DISTANCE = 1500;
+/** Frames loaded eagerly (in parallel) before background streaming begins. */
 const EAGER_FRAME_COUNT = 20;
 
 /**
- * Full-bleed, scroll-scrubbed cinematic reveal.
+ * Apple-style cinematic scroll intro: pinned only for `PIN_DISTANCE` px of
+ * scroll, then unpins for good and hands off to the normal page flow.
  *
- * The source video is portrait (9:16), so frames are drawn "contain"-fit and
- * centered rather than cropped — it reads as a cinematic frame within the
- * page rather than a stretched, blurry background.
+ * Deliberately avoids `position: sticky` — any ancestor with a non-`visible`
+ * `overflow-x` (the page root here uses `overflow-x-hidden`) makes the
+ * browser compute an implicit `overflow-y: auto` on it, which can hijack
+ * sticky's scrolling container and make it appear permanently pinned. It
+ * also avoids adding GSAP: the pin/unpin state machine in `pinScrollMath.ts`
+ * is the same technique ScrollTrigger uses internally (toggle
+ * `position: fixed` <-> `absolute` inside a wrapper that reserves the
+ * scroll space), applied directly via imperative DOM mutation on scroll so
+ * React never re-renders on the hot path.
  */
 const CinematicScrollSection: React.FC = () => {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const pinRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const cueRef = useRef<HTMLDivElement>(null);
   const imagesRef = useRef<(HTMLImageElement | null)[]>(
     Array(CINEMATIC_FRAME_COUNT).fill(null),
   );
@@ -114,28 +126,60 @@ const CinematicScrollSection: React.FC = () => {
     };
   }, [drawFrame, prefersReducedMotion]);
 
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ['start start', 'end end'],
-  });
+  // Pin/unpin: imperative DOM mutation on every scroll tick (no React
+  // re-render on the hot path — keeps this at 60fps).
+  const applyPinState = useCallback(() => {
+    const wrapper = wrapperRef.current;
+    const pin = pinRef.current;
+    if (!wrapper || !pin) return;
 
-  useMotionValueEvent(scrollYProgress, 'change', (v) => {
-    if (!prefersReducedMotion) renderAtProgress(v);
-  });
+    const rect = wrapper.getBoundingClientRect();
+    const viewportH = window.innerHeight;
+    const { position, top, progress } = computePinState(
+      rect.top,
+      rect.bottom,
+      rect.height,
+      viewportH,
+    );
 
-  useEffect(() => {
+    pin.style.position = position;
+    pin.style.top = `${top}px`;
+
+    renderAtProgress(progress);
+
+    if (cueRef.current) {
+      cueRef.current.style.opacity = progress < 0.06 ? String(1 - progress / 0.06) : '0';
+    }
+  }, [renderAtProgress]);
+
+  // useLayoutEffect: runs before paint, so the pin element is positioned
+  // correctly from the very first frame (no flash of unstyled layout).
+  useLayoutEffect(() => {
     if (prefersReducedMotion) return;
-    const onResize = () => renderAtProgress(scrollYProgress.get());
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, [prefersReducedMotion, renderAtProgress, scrollYProgress]);
 
-  const cueOpacity = useTransform(scrollYProgress, [0, 0.06], [1, 0]);
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        applyPinState();
+        ticking = false;
+      });
+    };
+
+    applyPinState();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
+  }, [applyPinState, prefersReducedMotion]);
 
   if (prefersReducedMotion) {
     // Respect the user's preference: a static frame, normal (non-pinned) height.
     return (
-      <section
+      <div
         aria-hidden="true"
         className="relative w-full h-[70vh] md:h-screen bg-space-black overflow-hidden flex items-center justify-center"
       >
@@ -144,18 +188,21 @@ const CinematicScrollSection: React.FC = () => {
           alt=""
           className="h-full w-auto max-w-full object-contain"
         />
-      </section>
+      </div>
     );
   }
 
   return (
-    <section
-      ref={containerRef}
+    <div
+      ref={wrapperRef}
       aria-hidden="true"
-      style={{ height: `${SCROLL_LENGTH_VH}vh` }}
       className="relative w-full bg-space-black"
+      style={{ height: `calc(100vh + ${PIN_DISTANCE}px)` }}
     >
-      <div className="sticky top-0 h-screen w-full overflow-hidden flex items-center justify-center">
+      <div
+        ref={pinRef}
+        className="absolute inset-x-0 h-screen w-full overflow-hidden flex items-center justify-center pointer-events-none"
+      >
         {/* Ambient dressing fills the letterboxed sides, matching the site's identity */}
         <div className="absolute inset-0 cyber-grid opacity-20 [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_85%)]" />
         <div className="absolute top-1/3 left-1/4 w-[520px] h-[520px] bg-neon-cyan/10 rounded-full blur-[140px]" />
@@ -163,16 +210,16 @@ const CinematicScrollSection: React.FC = () => {
 
         <canvas ref={canvasRef} className="relative z-10 h-full w-full" />
 
-        <motion.div
-          style={{ opacity: cueOpacity }}
+        <div
+          ref={cueRef}
           className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 text-gray-500 z-10"
         >
           <span className="text-[10px] uppercase tracking-[0.2em] font-semibold">
             Role para explorar
           </span>
-        </motion.div>
+        </div>
       </div>
-    </section>
+    </div>
   );
 };
 
