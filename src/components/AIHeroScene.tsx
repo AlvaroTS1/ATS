@@ -326,6 +326,10 @@ const AIHeroScene: React.FC = () => {
           p.material.dispose();
         }
       });
+      // dispose() alone doesn't free the WebGL context itself (only GPU
+      // buffers) until the canvas is garbage collected — force it so
+      // repeated mount/unmount never risks the browser's context limit.
+      renderer.forceContextLoss();
       renderer.dispose();
     };
   }, []);

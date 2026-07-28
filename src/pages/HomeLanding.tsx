@@ -1,6 +1,6 @@
 import React from 'react';
 import Header from '../components/Header';
-import CinematicScrollSection from '../components/CinematicScrollSection';
+import CinematicExperience from '../components/CinematicExperience';
 import HeroSection from '../components/HeroSection';
 import SolutionsSection from '../components/SolutionsSection';
 import ServicesSection from '../components/ServicesSection';
@@ -20,7 +20,7 @@ const HomeLanding: React.FC = () => {
       <GuardianBackgroundVideo />
       <Header />
       <main className="relative z-10">
-        <CinematicScrollSection />
+        <CinematicExperience />
         <HeroSection />
         <SolutionsSection />
         <ServicesSection />

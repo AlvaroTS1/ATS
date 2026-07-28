@@ -99,3 +99,37 @@ body {
   animation: border-pulse 4s infinite;
 }
 
+/*
+ * Holo panel birth sequence — energy converging into a solid interface,
+ * never a plain fade. Six stages: gathering energy → particles
+ * converging → glow intensifying → structure forming → materializing →
+ * settled solid. See `components/cinematic-overlays/HoloPanel.tsx`.
+ */
+@keyframes holo-emerge {
+  0%   { opacity: 0;    filter: blur(24px) brightness(4)   saturate(2.2); transform: scale(0.25); }
+  20%  { opacity: 0.35; filter: blur(16px) brightness(3.2) saturate(2);   transform: scale(0.45); }
+  40%  { opacity: 0.55; filter: blur(10px) brightness(2.4) saturate(1.7); transform: scale(0.65); }
+  60%  { opacity: 0.75; filter: blur(5px)  brightness(1.7) saturate(1.4); transform: scale(0.85); }
+  80%  { opacity: 0.92; filter: blur(1.5px) brightness(1.2); transform: scale(0.97); }
+  100% { opacity: 1;    filter: blur(0)    brightness(1);   transform: scale(1); }
+}
+
+/* Once solid, a panel never sits perfectly still — "permanece vivo". */
+@keyframes holo-idle-breathe {
+  0%, 100% { filter: brightness(1) saturate(1); }
+  50%      { filter: brightness(1.05) saturate(1.08); }
+}
+
+/*
+ * Both animations in ONE shorthand declaration — `animation` is not
+ * additive across separate classes, so applying "emerge" and "idle" as two
+ * different utility classes would just let the second silently replace the
+ * first. Combined here so `style.animationDelay` (a comma-separated list)
+ * can stagger both halves together per-panel from JS.
+ */
+.animate-holo-birth {
+  animation:
+    holo-emerge 850ms cubic-bezier(0.16, 1, 0.3, 1) forwards,
+    holo-idle-breathe 4.5s ease-in-out infinite 850ms;
+}
+
