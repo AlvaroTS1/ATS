@@ -22,8 +22,9 @@ const MAX_TILT_DEG = 9;
  * matching the aesthetic of the Holo Hall footage it sits on top of. It
  * doesn't fade in; it's born: energy gathers, particles converge, glow
  * intensifies, the structure resolves, and only then does it settle solid
- * (`animate-holo-emerge` in `index.css`). Once solid it never sits
- * perfectly still (`animate-holo-idle`), and it tilts toward the cursor
+ * (`.animate-materialize` in `index.css` — the shared birth primitive
+ * every piece of ATS interface uses, not a holo-panel-only effect). Once
+ * solid it never sits perfectly still, and it tilts toward the cursor
  * like a physical sheet of glass — never a card floating over a video.
  *
  * Three independently-controlled layers avoid fighting over the same CSS
@@ -69,7 +70,7 @@ const HoloPanel: React.FC<HoloPanelProps> = ({
     <div
       className={cn(
         'transition-[opacity,filter] duration-500 ease-out',
-        visible ? 'animate-holo-birth' : 'opacity-0 blur-lg scale-[0.4] brightness-[2.2] pointer-events-none',
+        visible ? 'animate-materialize' : 'opacity-0 blur-lg scale-[0.4] brightness-[2.2] pointer-events-none',
         dimmed && 'opacity-60 brightness-[0.82]',
       )}
       style={{ animationDelay: visible ? `${delayMs}ms, ${850 + delayMs}ms` : undefined }}

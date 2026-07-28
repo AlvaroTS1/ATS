@@ -100,12 +100,15 @@ body {
 }
 
 /*
- * Holo panel birth sequence — energy converging into a solid interface,
- * never a plain fade. Six stages: gathering energy → particles
+ * Materialization — the one way ANY piece of interface is allowed to
+ * enter in the ATS V4 universe: energy converging into a solid object,
+ * never a plain fade/slide. Six stages: gathering energy → particles
  * converging → glow intensifying → structure forming → materializing →
- * settled solid. See `components/cinematic-overlays/HoloPanel.tsx`.
+ * settled solid. Originally built for `components/cinematic-overlays/HoloPanel.tsx`;
+ * shared here so Hero/section content can adopt the exact same birth
+ * choreography instead of Framer Motion fade/slide.
  */
-@keyframes holo-emerge {
+@keyframes materialize-emerge {
   0%   { opacity: 0;    filter: blur(24px) brightness(4)   saturate(2.2); transform: scale(0.25); }
   20%  { opacity: 0.35; filter: blur(16px) brightness(3.2) saturate(2);   transform: scale(0.45); }
   40%  { opacity: 0.55; filter: blur(10px) brightness(2.4) saturate(1.7); transform: scale(0.65); }
@@ -114,8 +117,8 @@ body {
   100% { opacity: 1;    filter: blur(0)    brightness(1);   transform: scale(1); }
 }
 
-/* Once solid, a panel never sits perfectly still — "permanece vivo". */
-@keyframes holo-idle-breathe {
+/* Once solid, a materialized element never sits perfectly still — "permanece vivo". */
+@keyframes materialize-idle-breathe {
   0%, 100% { filter: brightness(1) saturate(1); }
   50%      { filter: brightness(1.05) saturate(1.08); }
 }
@@ -125,11 +128,11 @@ body {
  * additive across separate classes, so applying "emerge" and "idle" as two
  * different utility classes would just let the second silently replace the
  * first. Combined here so `style.animationDelay` (a comma-separated list)
- * can stagger both halves together per-panel from JS.
+ * can stagger both halves together per-element from JS.
  */
-.animate-holo-birth {
+.animate-materialize {
   animation:
-    holo-emerge 850ms cubic-bezier(0.16, 1, 0.3, 1) forwards,
-    holo-idle-breathe 4.5s ease-in-out infinite 850ms;
+    materialize-emerge 850ms cubic-bezier(0.16, 1, 0.3, 1) forwards,
+    materialize-idle-breathe 4.5s ease-in-out infinite 850ms;
 }
 
