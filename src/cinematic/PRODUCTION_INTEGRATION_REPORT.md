@@ -1,5 +1,16 @@
 # Relatório de Integração — 4 Vídeos Oficiais
 
+> **V2 (atual):** os 4 vídeos abaixo (`sitevideo1-4.mp4`, 16:9 paisagem, tomada
+> única de 40s) foram **completamente substituídos** por uma nova remessa —
+> `video1.6.mp4`, `video 2.6.mp4`, `video 3.6.mp4`, `video 4.6.mp4` — em
+> **9:16 retrato** (720×1280, 24fps, ~6s cada), mesma narrativa e mesmo
+> mapeamento de cena (nucleus/portal/ecosystem-entry/holo-hall), extraídos
+> a 20fps/540px de largura/`libwebp` q68 (120 frames por cena). Nenhum
+> asset ou código específico do 16:9 permanece — este relatório fica só
+> como histórico de como a arquitetura de vídeo-para-frames foi validada
+> pela primeira vez. Ver `ART_DIRECTION.md § Aspecto e enquadramento` para
+> a regra de fit atual (cover/contain por orientação, não por breakpoint).
+
 Registro do que foi de fato integrado na Scene Engine a partir dos 4 vídeos reais fornecidos (`sitevideo1-4.mp4`), substituindo as cenas procedurais Genesis/Core/Ecosystem/Products.
 
 ## Descoberta

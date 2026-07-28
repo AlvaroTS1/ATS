@@ -95,6 +95,7 @@ const HoloPanel: React.FC<HoloPanelProps> = ({
             backgroundColor: 'rgba(7, 11, 20, 0.55)',
             borderColor: `${product.accent.from}55`,
             boxShadow: `0 0 0 1px ${product.accent.from}22, 0 12px 40px -12px ${product.accent.glow}, inset 0 0 24px ${product.accent.from}11`,
+            filter: 'brightness(var(--ambient-light, 1))',
           }}
         >
           {/* Cursor-following sheen — the "physical glass" reflection */}

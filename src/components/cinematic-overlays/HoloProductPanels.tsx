@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { cinematicEvents } from '../../cinematic/EventBus';
 import { getProduct } from '../../data/products';
 import HoloPanel from './HoloPanel';
@@ -23,15 +23,28 @@ const coffeeBreak = getProduct('coffee-break')!;
 const HoloProductPanels: React.FC = () => {
   const [visible, setVisible] = useState(false);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     return cinematicEvents.on('holo-hall:panels', ({ visible }) => setVisible(visible));
+  }, []);
+
+  useEffect(() => {
+    // Same brightness signal AmbientLayer lerps toward — mapped to a subtle
+    // 0.85-1.15 multiplier so the panels read as lit by the shot they sit
+    // on, not a fixed HTML overlay. Set directly on a ref (no React state):
+    // this is a hot per-frame-change path, not something a render should
+    // ever run for.
+    return cinematicEvents.on('cinematic:ambient-light', ({ brightness }) => {
+      containerRef.current?.style.setProperty('--ambient-light', String(0.85 + brightness * 0.3));
+    });
   }, []);
 
   const dimmed = (id: string) => hoveredId !== null && hoveredId !== id;
 
   return (
     <div
+      ref={containerRef}
       className="absolute inset-0 z-40 flex items-center gap-4 overflow-x-auto overflow-y-hidden snap-x snap-mandatory px-6 md:justify-center md:gap-8 md:overflow-visible md:px-12"
       style={{ pointerEvents: visible ? 'auto' : 'none' }}
     >

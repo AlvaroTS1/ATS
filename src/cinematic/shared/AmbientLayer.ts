@@ -1,3 +1,5 @@
+import { cinematicEvents } from '../EventBus';
+
 interface Mote {
   baseX: number;
   baseY: number;
@@ -50,6 +52,10 @@ export class AmbientLayer {
   private texture: HTMLCanvasElement | null = null;
   private rafId: number | null = null;
   private startTime = 0;
+  /** Smoothed brightness (0-1) the currently-visible footage is lit at — lerped, never snapped, toward `targetLight`. */
+  private ambientLight = 0.5;
+  private targetLight = 0.5;
+  private unsubscribeLight: (() => void) | null = null;
   private onVisibilityChange = (): void => {
     if (document.hidden) this.stop();
     else this.start();
@@ -68,6 +74,9 @@ export class AmbientLayer {
     }));
     this.resize(canvas.clientWidth, canvas.clientHeight);
     document.addEventListener('visibilitychange', this.onVisibilityChange);
+    this.unsubscribeLight = cinematicEvents.on('cinematic:ambient-light', ({ brightness }) => {
+      this.targetLight = brightness;
+    });
     this.start();
   }
 
@@ -112,6 +121,14 @@ export class AmbientLayer {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, cssW, cssH);
 
+    // Lerp toward the footage's own brightness instead of snapping — this is
+    // what keeps the ambient layer reading as *lit by* the video rather than
+    // an independent overlay (see `createFrameSequenceScene`'s emit).
+    this.ambientLight += (this.targetLight - this.ambientLight) * 0.04;
+    // Floored so darker shots dim the ambience without ever going dead —
+    // "extremamente discreto", not a lighting rig.
+    const lightMul = 0.75 + this.ambientLight * 0.5;
+
     // Slow drifting dust — deterministic sine drift per ART_DIRECTION.md,
     // never Math.random() per frame.
     if (this.texture) {
@@ -119,7 +136,7 @@ export class AmbientLayer {
         const x = mote.baseX * cssW + Math.sin(t * mote.speed + mote.phase) * 18;
         const y = mote.baseY * cssH + Math.cos(t * mote.speed * 0.7 + mote.phase) * 14;
         const breathe = 0.7 + Math.sin(t * 0.3 + mote.phase) * 0.3;
-        ctx.globalAlpha = mote.alpha * breathe;
+        ctx.globalAlpha = mote.alpha * breathe * lightMul;
         const size = mote.radius * 6;
         ctx.drawImage(this.texture, x - size / 2, y - size / 2, size, size);
       }
@@ -135,7 +152,7 @@ export class AmbientLayer {
       cssH * 0.42,
       Math.max(cssW, cssH) * 0.55,
     );
-    gradient.addColorStop(0, `rgba(41, 171, 226, ${0.025 * breatheGlow})`);
+    gradient.addColorStop(0, `rgba(41, 171, 226, ${0.025 * breatheGlow * lightMul})`);
     gradient.addColorStop(1, 'rgba(41, 171, 226, 0)');
     ctx.globalAlpha = 1;
     ctx.fillStyle = gradient;
@@ -145,6 +162,8 @@ export class AmbientLayer {
   unmount(): void {
     this.stop();
     document.removeEventListener('visibilitychange', this.onVisibilityChange);
+    this.unsubscribeLight?.();
+    this.unsubscribeLight = null;
     this.canvas = null;
     this.motes = [];
     this.texture = null;

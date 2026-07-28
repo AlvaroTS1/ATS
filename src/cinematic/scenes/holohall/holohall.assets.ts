@@ -1,6 +1,6 @@
 import type { SceneAssets } from '../../types';
 
-export const HOLOHALL_FRAME_COUNT = 160;
+export const HOLOHALL_FRAME_COUNT = 120;
 
 export function getHoloHallFramePath(index: number): string {
   const n = Math.min(HOLOHALL_FRAME_COUNT, Math.max(1, index + 1));

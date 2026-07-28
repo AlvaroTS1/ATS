@@ -1,7 +1,9 @@
 import type { Scene, SceneAssets } from '../types';
 import { AssetManager } from '../AssetManager';
+import { cinematicEvents } from '../EventBus';
 import { FrameSequenceRenderer } from './FrameSequenceRenderer';
 import { pickFrameIndex } from './FrameSequenceAnimator';
+import { sampleLuminance } from './sampleLuminance';
 
 export interface FrameSequenceSceneConfig {
   id: string;
@@ -21,12 +23,18 @@ export interface FrameSequenceSceneConfig {
  * reveal) is just this factory plus a small assets manifest. Animator
  * (frame selection) and Renderer (drawing) stay shared and battle-tested
  * in one place instead of copy-pasted per scene.
+ *
+ * Every frame change also samples that frame's brightness and emits
+ * `'cinematic:ambient-light'` — the one wire that lets `AmbientLayer` and
+ * the Holo panels' glow track the footage's own lighting instead of
+ * rendering as an independent layer on top of it.
  */
 export function createFrameSequenceScene(config: FrameSequenceSceneConfig): Scene {
   const assetManager = new AssetManager();
   const renderer = new FrameSequenceRenderer();
   const frames: string[] = Array.from({ length: config.frameCount }, (_, i) => config.getFramePath(i));
   let currentIndex = -1;
+  let lastSampledIndex = -1;
 
   const doRender = (opacity: number): void => {
     const url = currentIndex >= 0 ? frames[currentIndex] : null;
@@ -62,6 +70,13 @@ export function createFrameSequenceScene(config: FrameSequenceSceneConfig): Scen
         (i) => assetManager.isLoaded(frames[i]),
         config.freezeAt ?? 1,
       );
+      if (currentIndex >= 0 && currentIndex !== lastSampledIndex) {
+        lastSampledIndex = currentIndex;
+        const image = assetManager.get(frames[currentIndex]);
+        if (image) {
+          cinematicEvents.emit('cinematic:ambient-light', { brightness: sampleLuminance(image) });
+        }
+      }
       config.onProgress?.(localProgress);
     },
 

@@ -2,12 +2,16 @@
  * Draws a single already-decoded frame onto a 2D canvas, modulated by
  * `opacity` for scene cross-fades. Shared by every video-based scene.
  *
- * Fit mode adapts to the canvas's own aspect ratio: the source footage is
- * landscape (16:9), so a landscape/square viewport gets "cover" (full-bleed,
- * cropped, immersive — no letterbox bars breaking the illusion), while a
- * portrait viewport (mobile) gets "contain" (letterboxed top/bottom) so a
- * tall narrow screen never crops out side content like the Holo Hall's
- * flanking panels.
+ * Fit mode compares the *image's* aspect ratio against the *canvas's* —
+ * not a hardcoded assumption about either. When both are on the same side
+ * of square (both portrait, or both landscape/square) the shapes roughly
+ * agree, so "cover" reads as full-bleed and immersive with only a minor
+ * crop. When they're on opposite sides — our vertical 9:16 footage inside
+ * a wide desktop viewport, for instance — "cover" would zoom in until only
+ * a thin sliver of the frame's height survives, so we "contain" instead:
+ * the footage sits centered like a vertical portal, letterboxed left and
+ * right by the scene's own ambient dressing (grid, glow, particles)
+ * instead of hard black bars.
  */
 export class FrameSequenceRenderer {
   private canvas: HTMLCanvasElement | null = null;
@@ -47,7 +51,9 @@ export class FrameSequenceRenderer {
     ctx.globalAlpha = Math.min(1, Math.max(0, opacity));
 
     const canvasAspect = cssW / cssH;
-    const useCover = canvasAspect > 1; // landscape/square viewport → full-bleed
+    const imageAspect = image.naturalWidth / image.naturalHeight;
+    const sameOrientation = (canvasAspect >= 1) === (imageAspect >= 1);
+    const useCover = sameOrientation;
     const scale = useCover
       ? Math.max(cssW / image.naturalWidth, cssH / image.naturalHeight)
       : Math.min(cssW / image.naturalWidth, cssH / image.naturalHeight);

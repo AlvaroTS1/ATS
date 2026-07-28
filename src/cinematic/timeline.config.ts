@@ -10,9 +10,10 @@ import type { SceneDurationConfig } from './types';
  * one (shared with that next scene's start, not additional length).
  *
  * `nucleus` -> `portal` -> `ecosystem-entry` -> `holo-hall` are real
- * cinematic footage: one continuous 40s single-take camera move (each cut
- * literally starts on the next file's first frame), extracted to frame
- * sequences. Because it's one real shot, not four independently rendered
+ * cinematic footage: one continuous ~24s single-take camera move across 4
+ * clips (each cut literally starts on the next file's first frame),
+ * extracted to frame sequences. Because it's one real shot, not four
+ * independently rendered
  * scenes, the overlap between them only needs to be a small safety blend
  * (0.05) rather than a real cross-fade — there's no visual mismatch to
  * hide. `holo-hall` gets a larger overlap (0.12) since it hands off to an

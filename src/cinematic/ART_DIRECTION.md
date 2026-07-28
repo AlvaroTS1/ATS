@@ -14,9 +14,26 @@ pertence à experiência.
 
 ## Aspecto e enquadramento
 
-**Atualizado (produção real, substitui o planejamento anterior em `PRODUCTION_BIBLE.md`/`PRODUCTION_PROMPTS_FINAL.md`, que assumiam 9:16):** os 4 vídeos oficiais de produção (Núcleo, Portal, Entrada no Ecossistema, Ambiente Holográfico Principal) foram entregues em **16:9 paisagem** (1280×720), não em retrato — uma tomada única contínua de 40s. Isso é a nova referência real; qualquer asset futuro deve seguir 16:9 para não criar um "acordeão" de aspecto entre cenas.
+**V2 (referência atual):** os 4 vídeos oficiais foram recriados em **9:16
+retrato** (720×1280, 24fps, ~6s cada) — Núcleo, Portal, Entrada no
+Ecossistema, Ambiente Holográfico Principal, uma narrativa única e
+contínua (cada arquivo continua exatamente de onde o anterior termina).
+Isso substitui a produção V1 em 16:9 paisagem (histórico preservado em
+`PRODUCTION_INTEGRATION_REPORT.md`) — nenhum código ou asset da versão
+16:9 permanece no projeto.
 
-**Fit adaptativo por viewport** (`shared/FrameSequenceRenderer.ts`): telas paisagem/quadradas (desktop) usam `cover` (tela cheia, recorta as bordas, imersão total, sem barras de letterbox); telas retrato (mobile) usam `contain` (letterbox no topo/base) — decisão automática comparando a proporção do próprio canvas, não um breakpoint fixo. Isso evita que um recorte agressivo em `cover` corte painéis/conteúdo lateral importante numa tela alta e estreita.
+**Fit adaptativo por orientação, não por breakpoint** (`shared/FrameSequenceRenderer.ts`):
+a decisão de `cover` vs `contain` compara a orientação da *imagem* com a
+orientação do *canvas*, nunca assume qual delas é paisagem. Quando as duas
+concordam (ambas retrato, ou ambas paisagem/quadrada) o encaixe é `cover`
+— tela cheia, imersivo, sem barras. Quando divergem — nosso vídeo 9:16
+dentro de um viewport largo de desktop, por exemplo — o encaixe é
+`contain`: a filmagem fica centralizada como um "portal" vertical,
+ladeada pela própria ambientação da cena (grid, glow, partículas) em vez
+de barras pretas. Resultado prático: mobile (retrato) recebe `cover`
+(tela cheia, como conteúdo nativo de app), desktop (paisagem) recebe
+`contain` (portal vertical centralizado) — a mesma regra serve as duas
+sem precisar de um caso especial por dispositivo.
 
 ## Câmera
 

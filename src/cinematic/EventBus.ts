@@ -38,6 +38,14 @@ export interface CinematicEventMap {
   'products:stage': { productId: string; name: string; color: number };
   /** Fired only when the Holo Hall's interactive panel window is entered/exited (not every frame). */
   'holo-hall:panels': { visible: boolean };
+  /**
+   * Fired whenever any frame-sequence scene advances to a newly-loaded
+   * frame — the one wire connecting footage to interface. `brightness` is
+   * that frame's average luma (0-1). Consumers (AmbientLayer, the Holo
+   * panels' glow) lerp toward it instead of jumping, so the environment's
+   * light reads as *lit by* the footage, not layered independently on top.
+   */
+  'cinematic:ambient-light': { brightness: number };
   [key: string]: unknown;
 }
 

@@ -1,6 +1,6 @@
 import type { SceneAssets } from '../../types';
 
-export const NUCLEUS_FRAME_COUNT = 160;
+export const NUCLEUS_FRAME_COUNT = 120;
 
 export function getNucleusFramePath(index: number): string {
   const n = Math.min(NUCLEUS_FRAME_COUNT, Math.max(1, index + 1));
