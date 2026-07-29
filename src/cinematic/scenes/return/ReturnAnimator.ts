@@ -12,6 +12,8 @@ export interface ReturnState {
   coreGlowOpacity: number;
   /** Extra internal dim near the very end — settles the scene to a calm ember before the Hero takes over. */
   sceneFadeOpacity: number;
+  /** The Guardian's bookend reprise — he resolves into view, distant and dim, watching the energy return home. Never full brightness: this is a farewell glance, not a second "his scene" moment. */
+  guardianOpacity: number;
 }
 
 const CAMERA_START_Z = 6;
@@ -20,6 +22,9 @@ const CAMERA_END_Z = 10;
 const GLOW_PEAK = 0.55;
 /** The last stretch settles to a calm ember instead of a hard cut, for a natural Hero handoff. */
 const FINAL_FADE_START = 0.85;
+/** The Guardian resolves into view only once the collapse is mostly settled — a farewell, not a re-entrance. */
+const GUARDIAN_REPRISE_START = 0.55;
+const GUARDIAN_REPRISE_PEAK = 0.4;
 
 /** One-time random scatter the particles converge back FROM — computed once at mount. */
 export function computeScatteredPositions(count: number, spread: number): Float32Array {
@@ -54,4 +59,9 @@ export function step(buffers: ReturnBuffers, progress: number, out: ReturnState)
 
   out.sceneFadeOpacity =
     t < FINAL_FADE_START ? 1 : 1 - ((t - FINAL_FADE_START) / (1 - FINAL_FADE_START)) * 0.7;
+
+  out.guardianOpacity =
+    t < GUARDIAN_REPRISE_START
+      ? 0
+      : Math.min(1, (t - GUARDIAN_REPRISE_START) / (1 - GUARDIAN_REPRISE_START)) * GUARDIAN_REPRISE_PEAK;
 }

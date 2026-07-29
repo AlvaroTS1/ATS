@@ -1,14 +1,18 @@
 import * as THREE from 'three';
 import { createParticleTexture } from '../../shared/particleTexture';
 import { createBloomComposer, type BloomComposer } from '../../shared/createBloomComposer';
+import { LoopingVideoTexture } from '../../shared/LoopingVideoTexture';
 import type { ReturnState } from './ReturnAnimator';
 
 /**
  * Renders the collapse: ambient particles pull back toward the origin
  * while the camera slowly retreats and the core glow flares then dims —
  * ending in a calm, dim ember that the Hero can naturally fade up from.
- * Owns every Three.js resource it creates and disposes all of them on
- * unmount.
+ * The Guardian reprises here, distant and dim, the same asset as the
+ * `guardian` scene (no extra asset cost) — a farewell glance before the
+ * Hero takes over, the bookend to his earlier awakening.
+ * Owns every Three.js + video resource it creates and disposes all of
+ * them on unmount.
  */
 export class ReturnRenderer {
   private scene: THREE.Scene | null = null;
@@ -20,8 +24,22 @@ export class ReturnRenderer {
   private glowMaterial: THREE.SpriteMaterial | null = null;
   private glowTexture: THREE.CanvasTexture | null = null;
   private composer: BloomComposer | null = null;
+  private guardianVideoSource: LoopingVideoTexture | null = null;
+  private guardianPlaneGeometry: THREE.PlaneGeometry | null = null;
+  private guardianPlaneMaterial: THREE.MeshBasicMaterial | null = null;
 
-  mount(canvas: HTMLCanvasElement, particlePositions: Float32Array, pixelRatioCap: number): void {
+  /** Starts the Guardian's hidden `<video>` reprise — call during `Scene.preload()`, before `mount()`. */
+  async loadGuardianVideo(videoUrl: string): Promise<THREE.VideoTexture> {
+    this.guardianVideoSource = new LoopingVideoTexture();
+    return this.guardianVideoSource.load(videoUrl);
+  }
+
+  mount(
+    canvas: HTMLCanvasElement,
+    particlePositions: Float32Array,
+    pixelRatioCap: number,
+    guardianTexture: THREE.VideoTexture | null,
+  ): void {
     const width = canvas.clientWidth || 1;
     const height = canvas.clientHeight || 1;
 
@@ -59,6 +77,21 @@ export class ReturnRenderer {
     const glow = new THREE.Sprite(this.glowMaterial);
     glow.scale.set(2.2, 2.2, 1);
     this.scene.add(glow);
+
+    if (guardianTexture) {
+      // Small and distant, behind the particle field — a presence noticed,
+      // not a second spotlight moment.
+      this.guardianPlaneGeometry = new THREE.PlaneGeometry(1.1, 1.1 * (1280 / 720));
+      this.guardianPlaneMaterial = new THREE.MeshBasicMaterial({
+        map: guardianTexture,
+        transparent: true,
+        opacity: 0,
+        depthWrite: false,
+      });
+      const guardianPlane = new THREE.Mesh(this.guardianPlaneGeometry, this.guardianPlaneMaterial);
+      guardianPlane.position.set(0, 0, -5);
+      this.scene.add(guardianPlane);
+    }
   }
 
   resize(cssWidth: number, cssHeight: number): void {
@@ -80,6 +113,8 @@ export class ReturnRenderer {
 
     if (this.glowMaterial) this.glowMaterial.opacity = state.coreGlowOpacity * combinedOpacity;
 
+    if (this.guardianPlaneMaterial) this.guardianPlaneMaterial.opacity = state.guardianOpacity * combinedOpacity;
+
     if (this.composer) this.composer.render();
     else this.renderer.render(this.scene, this.camera);
   }
@@ -90,6 +125,9 @@ export class ReturnRenderer {
     this.particleTexture?.dispose();
     this.glowMaterial?.dispose();
     this.glowTexture?.dispose();
+    this.guardianPlaneGeometry?.dispose();
+    this.guardianPlaneMaterial?.dispose();
+    this.guardianVideoSource?.dispose();
     this.composer?.dispose();
     // See GenesisRenderer.unmount() — forceContextLoss() frees the WebGL
     // context immediately instead of waiting on garbage collection.
@@ -104,6 +142,9 @@ export class ReturnRenderer {
     this.particleTexture = null;
     this.glowMaterial = null;
     this.glowTexture = null;
+    this.guardianPlaneGeometry = null;
+    this.guardianPlaneMaterial = null;
+    this.guardianVideoSource = null;
     this.composer = null;
   }
 }

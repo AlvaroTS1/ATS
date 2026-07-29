@@ -12,8 +12,13 @@ import { intToRgb } from '../cinematic/shared/colorLerp';
 import { getDeviceTier } from '../lib/deviceTier';
 import HoloProductPanels from './cinematic-overlays/HoloProductPanels';
 
-/** Scroll storytelling shrinks a little on narrow viewports — same scene order, tighter pacing. */
-const MOBILE_DISTANCE_SCALE = 0.75;
+/**
+ * Mobile-first: `timeline.config.ts` distances ARE the mobile pacing.
+ * Desktop — more screen, a mouse-driven scroll that covers ground faster —
+ * gets a touch more room per scene, so it expands instead of mobile being
+ * a shrunk-down desktop.
+ */
+const DESKTOP_DISTANCE_SCALE = 4 / 3;
 const MOBILE_BREAKPOINT_PX = 768;
 
 /**
@@ -89,7 +94,7 @@ const CinematicExperience: React.FC = () => {
     // Sizing the pin wrapper never waits on scene construction — it only
     // needs the timeline's total distance, known synchronously up front.
     const timeline = new Timeline(SCENE_DURATIONS);
-    const distanceScale = window.innerWidth < MOBILE_BREAKPOINT_PX ? MOBILE_DISTANCE_SCALE : 1;
+    const distanceScale = window.innerWidth < MOBILE_BREAKPOINT_PX ? 1 : DESKTOP_DISTANCE_SCALE;
     const totalDistance = Math.round(timeline.getTotalDistance() * distanceScale);
     wrapper.style.height = `calc(100vh + ${totalDistance}px)`;
 
