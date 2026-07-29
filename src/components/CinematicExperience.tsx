@@ -1,5 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { computePinState } from '../lib/pinScrollMath';
+import { stepProgress } from '../lib/scrollEasing';
 import { Timeline } from '../cinematic/Timeline';
 import { SceneEngine } from '../cinematic/SceneEngine';
 import { SCENE_REGISTRY } from '../cinematic/SceneRegistry';
@@ -114,6 +115,37 @@ const CinematicExperience: React.FC = () => {
     wrapper.style.height = `calc(100vh + ${totalDistance}px)`;
 
     let ticking = false;
+    let targetProgress = 0;
+    let smoothedProgress = 0;
+    let easeRafId: number | null = null;
+
+    /** Sizing is a resize concern, not a per-frame one — kept off the eased loop. */
+    const resizeWorld = () => {
+      engineRef.current?.resizeAll(pin.clientWidth, pin.clientHeight);
+      ambientLayerRef.current?.resize(pin.clientWidth, pin.clientHeight);
+      guardianPresenceRef.current?.resize(pin.clientWidth, pin.clientHeight);
+    };
+
+    /** Everything that lives on scroll progress reads the SMOOTHED value. */
+    const pushWorldProgress = (p: number) => {
+      engineRef.current?.tick(p);
+      ambientLayerRef.current?.setScrollProgress(p);
+      guardianPresenceRef.current?.setProgress(p);
+      if (cueRef.current) {
+        cueRef.current.style.opacity = p < 0.04 ? String(1 - p / 0.04) : '0';
+      }
+    };
+
+    const stepEase = () => {
+      const { value, keepEasing } = stepProgress(smoothedProgress, targetProgress);
+      smoothedProgress = value;
+      pushWorldProgress(smoothedProgress);
+      easeRafId = keepEasing ? requestAnimationFrame(stepEase) : null;
+    };
+
+    const startEasing = () => {
+      if (easeRafId === null) easeRafId = requestAnimationFrame(stepEase);
+    };
 
     const applyPinState = () => {
       const rect = wrapper.getBoundingClientRect();
@@ -125,22 +157,13 @@ const CinematicExperience: React.FC = () => {
         viewportH,
       );
 
+      // The pin itself is NEVER smoothed — a lagging fixed/absolute toggle
+      // would visibly detach the pinned layer from the page.
       pin.style.position = position;
       pin.style.top = `${top}px`;
 
-      const engine = engineRef.current;
-      if (engine) {
-        engine.resizeAll(pin.clientWidth, pin.clientHeight);
-        engine.tick(progress);
-      }
-      ambientLayerRef.current?.resize(pin.clientWidth, pin.clientHeight);
-      ambientLayerRef.current?.setScrollProgress(progress);
-      guardianPresenceRef.current?.resize(pin.clientWidth, pin.clientHeight);
-      guardianPresenceRef.current?.setProgress(progress);
-
-      if (cueRef.current) {
-        cueRef.current.style.opacity = progress < 0.04 ? String(1 - progress / 0.04) : '0';
-      }
+      targetProgress = progress;
+      startEasing();
     };
 
     const onScroll = () => {
@@ -152,9 +175,16 @@ const CinematicExperience: React.FC = () => {
       });
     };
 
+    const onResize = () => {
+      applyPinState();
+      resizeWorld();
+      pushWorldProgress(smoothedProgress);
+    };
+
     applyPinState();
+    resizeWorld();
     window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
+    window.addEventListener('resize', onResize);
 
     SceneEngine.create(SCENE_REGISTRY, SCENE_ASSETS, timeline).then((engine) => {
       if (cancelled) {
@@ -169,13 +199,20 @@ const CinematicExperience: React.FC = () => {
         return: returnCanvas,
       });
       engine.preloadAll();
+      // The engine missed every frame drawn before it existed — size it and
+      // paint the current progress immediately, without easing in from 0.
       applyPinState();
+      resizeWorld();
+      smoothedProgress = targetProgress;
+      pushWorldProgress(smoothedProgress);
     });
 
     return () => {
       cancelled = true;
       window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
+      window.removeEventListener('resize', onResize);
+      if (easeRafId !== null) cancelAnimationFrame(easeRafId);
+      easeRafId = null;
       engineRef.current?.unmountAll();
       engineRef.current = null;
       ambientLayerRef.current?.unmount();
