@@ -33,14 +33,21 @@ import type { SceneDurationConfig } from './types';
  * `CinematicExperience.tsx` multiplies by `DESKTOP_DISTANCE_SCALE` (4/3)
  * above the tablet breakpoint — the exact inverse of the 0.75 mobile
  * scale-down V1-V3 used, so desktop pacing is unchanged from before.
+ *
+ * V5.1: `fusion-ai` removed — it was a contextless "Em breve" placeholder
+ * (two abstract orbs merging, no product name/branding), never connected
+ * to the real "Fusion AI" roadmap entry in `data/products.ts`. That
+ * product keeps existing in `RoadmapSection`; it just doesn't get an
+ * unexplained cinematic beat. Its distance moved into `return`, which
+ * needs the room for the Guardian's persistent presence (`GuardianPresence`)
+ * and the in-universe Hero HUD landing inside it.
  */
 export const SCENE_DURATIONS: SceneDurationConfig[] = [
   { id: 'nucleus', distance: 750, overlap: 0.05 },
   { id: 'guardian', distance: 825, overlap: 0.15 },
   { id: 'portal-corridor', distance: 1425, overlap: 0.05 },
   { id: 'holo-hall', distance: 750, overlap: 0.12 },
-  { id: 'fusion-ai', distance: 675, overlap: 0.3 },
   // Last scene: no overlap needed — it settles to a calm ember and the
   // pin releases into the (unchanged) Hero right after.
-  { id: 'return', distance: 675 },
+  { id: 'return', distance: 1350 },
 ];

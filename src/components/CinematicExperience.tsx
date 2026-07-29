@@ -38,7 +38,6 @@ const CinematicExperience: React.FC = () => {
   const guardianCanvasRef = useRef<HTMLCanvasElement>(null);
   const portalCorridorCanvasRef = useRef<HTMLCanvasElement>(null);
   const holoHallCanvasRef = useRef<HTMLCanvasElement>(null);
-  const fusionAiCanvasRef = useRef<HTMLCanvasElement>(null);
   const returnCanvasRef = useRef<HTMLCanvasElement>(null);
   const ambientCanvasRef = useRef<HTMLCanvasElement>(null);
   const cueRef = useRef<HTMLDivElement>(null);
@@ -62,7 +61,6 @@ const CinematicExperience: React.FC = () => {
     const guardianCanvas = guardianCanvasRef.current;
     const portalCorridorCanvas = portalCorridorCanvasRef.current;
     const holoHallCanvas = holoHallCanvasRef.current;
-    const fusionAiCanvas = fusionAiCanvasRef.current;
     const returnCanvas = returnCanvasRef.current;
     const ambientCanvas = ambientCanvasRef.current;
     if (
@@ -72,7 +70,6 @@ const CinematicExperience: React.FC = () => {
       !guardianCanvas ||
       !portalCorridorCanvas ||
       !holoHallCanvas ||
-      !fusionAiCanvas ||
       !returnCanvas ||
       !ambientCanvas
     )
@@ -150,7 +147,6 @@ const CinematicExperience: React.FC = () => {
         guardian: guardianCanvas,
         'portal-corridor': portalCorridorCanvas,
         'holo-hall': holoHallCanvas,
-        'fusion-ai': fusionAiCanvas,
         return: returnCanvas,
       });
       engine.preloadAll();
@@ -198,8 +194,7 @@ const CinematicExperience: React.FC = () => {
 
         {/* One continuous cinematic take (nucleus -> guardian -> portal-corridor -> holo-hall),
             stacked earliest-on-top so each fades away to reveal the next one underneath. */}
-        <canvas ref={returnCanvasRef} className="absolute inset-0 z-[-30] h-full w-full" />
-        <canvas ref={fusionAiCanvasRef} className="absolute inset-0 z-[-20] h-full w-full" />
+        <canvas ref={returnCanvasRef} className="absolute inset-0 z-[-20] h-full w-full" />
         <canvas ref={holoHallCanvasRef} className="absolute inset-0 z-[-10] h-full w-full" />
         <canvas ref={portalCorridorCanvasRef} className="absolute inset-0 z-0 h-full w-full" />
         <canvas ref={guardianCanvasRef} className="absolute inset-0 z-10 h-full w-full" />
