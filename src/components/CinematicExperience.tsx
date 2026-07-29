@@ -134,6 +134,7 @@ const CinematicExperience: React.FC = () => {
         engine.tick(progress);
       }
       ambientLayerRef.current?.resize(pin.clientWidth, pin.clientHeight);
+      ambientLayerRef.current?.setScrollProgress(progress);
       guardianPresenceRef.current?.resize(pin.clientWidth, pin.clientHeight);
       guardianPresenceRef.current?.setProgress(progress);
 

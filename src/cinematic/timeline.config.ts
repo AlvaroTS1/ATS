@@ -42,9 +42,15 @@ import type { SceneDurationConfig } from './types';
  * unexplained cinematic beat. Its distance moved into `return`, which
  * needs the room for the Guardian's persistent presence (`GuardianPresence`)
  * and the in-universe Hero HUD landing inside it.
+ *
+ * V5.1 Fase E: `nucleus`'s overlap into `portal-corridor` rose from 0.05
+ * to 0.12 — that boundary is where the visual language actually changes
+ * (procedural core → real footage), so it was the most abrupt cut in the
+ * whole journey; the other footage-to-footage handoffs stay at their
+ * small safety blend since there's no real mismatch to hide there.
  */
 export const SCENE_DURATIONS: SceneDurationConfig[] = [
-  { id: 'nucleus', distance: 750, overlap: 0.05 },
+  { id: 'nucleus', distance: 750, overlap: 0.12 },
   // Absorbed the old discrete `guardian` scene's distance (825px) — the
   // Guardian's "awakening" now happens on `GuardianPresence`'s own pose
   // curve during this stretch, not a separate scene mount.

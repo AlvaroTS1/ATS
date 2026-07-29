@@ -39,6 +39,9 @@ export class AmbientLayer {
   private currentTint: [number, number, number] = [...DEFAULT_TINT];
   private targetTint: [number, number, number] = [...DEFAULT_TINT];
   private textureTint: [number, number, number] = [...DEFAULT_TINT];
+  /** V5.1: motes drift a little further as the user scrolls, not just on the real clock — the cue that reads as "moving through", not "watching a video scroll by". Larger (nearer-reading) motes shift more than smaller ones, a cheap parallax depth cue. */
+  private targetScrollProgress = 0;
+  private smoothedScrollProgress = 0;
   private onVisibilityChange = (): void => {
     if (document.hidden) this.stop();
     else this.start();
@@ -47,6 +50,11 @@ export class AmbientLayer {
   /** A product's accent color while it's the one in focus — `null` returns to ATS cyan. */
   setTint(rgb: [number, number, number] | null): void {
     this.targetTint = rgb ?? [...DEFAULT_TINT];
+  }
+
+  /** Global pin progress (0-1) — drives the parallax nudge below, not just the real clock. */
+  setScrollProgress(progress: number): void {
+    this.targetScrollProgress = progress;
   }
 
   mount(canvas: HTMLCanvasElement, moteCount: number): void {
@@ -133,16 +141,24 @@ export class AmbientLayer {
     }
     const tintRgb = this.currentTint.map((v) => Math.round(v)).join(', ');
 
+    // Lerp toward the scroll-driven target too — never snap, same as
+    // brightness/tint above.
+    this.smoothedScrollProgress += (this.targetScrollProgress - this.smoothedScrollProgress) * 0.05;
+
     // Slow drifting dust — deterministic sine drift per ART_DIRECTION.md,
-    // never Math.random() per frame.
+    // never Math.random() per frame. Each mote's `radius` (already random,
+    // no new field needed) doubles as a depth cue: bigger reads as nearer,
+    // so it parallaxes further per unit of scroll than a smaller, farther one.
     if (this.texture) {
       for (const mote of this.motes) {
+        const parallax = this.smoothedScrollProgress * mote.radius * 70;
         const x = mote.baseX * cssW + Math.sin(t * mote.speed + mote.phase) * 18;
-        const y = mote.baseY * cssH + Math.cos(t * mote.speed * 0.7 + mote.phase) * 14;
+        const y = mote.baseY * cssH + Math.cos(t * mote.speed * 0.7 + mote.phase) * 14 - parallax;
+        const wrappedY = ((y % cssH) + cssH) % cssH;
         const breathe = 0.7 + Math.sin(t * 0.3 + mote.phase) * 0.3;
         ctx.globalAlpha = mote.alpha * breathe * lightMul;
         const size = mote.radius * 6;
-        ctx.drawImage(this.texture, x - size / 2, y - size / 2, size, size);
+        ctx.drawImage(this.texture, x - size / 2, wrappedY - size / 2, size, size);
       }
     }
 
