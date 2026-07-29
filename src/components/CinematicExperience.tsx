@@ -12,6 +12,7 @@ import { cinematicEvents } from '../cinematic/EventBus';
 import { intToRgb } from '../cinematic/shared/colorLerp';
 import { getDeviceTier } from '../lib/deviceTier';
 import HoloProductPanels from './cinematic-overlays/HoloProductPanels';
+import HeroHUD from './cinematic-overlays/HeroHUD';
 
 /**
  * Mobile-first: `timeline.config.ts` distances ARE the mobile pacing.
@@ -188,6 +189,7 @@ const CinematicExperience: React.FC = () => {
     // Respect the user's preference: a static frame, normal (non-pinned) height.
     return (
       <div
+        id="home"
         aria-hidden="true"
         className="relative w-full h-[70vh] md:h-screen bg-space-black overflow-hidden flex items-center justify-center"
       >
@@ -201,7 +203,7 @@ const CinematicExperience: React.FC = () => {
   }
 
   return (
-    <div ref={wrapperRef} aria-hidden="true" className="relative w-full bg-space-black">
+    <div id="home" ref={wrapperRef} aria-hidden="true" className="relative w-full bg-space-black">
       <div
         ref={pinRef}
         className="absolute inset-x-0 h-screen w-full overflow-hidden flex items-center justify-center pointer-events-none"
@@ -231,6 +233,7 @@ const CinematicExperience: React.FC = () => {
         <div className="absolute inset-0 z-[26] pointer-events-none [background:radial-gradient(ellipse_at_center,transparent_55%,rgba(0,0,0,0.4)_100%)]" />
 
         <HoloProductPanels />
+        <HeroHUD />
 
         <div
           ref={cueRef}

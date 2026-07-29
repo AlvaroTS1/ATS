@@ -39,6 +39,12 @@ export interface CinematicEventMap {
   /** Fired only when the Holo Hall's interactive panel window is entered/exited (not every frame). */
   'holo-hall:panels': { visible: boolean };
   /**
+   * Fired once `return`'s collapse has settled enough for the Hero to
+   * exist (V5.1 Fase C) — the interface is born inside the still-pinned
+   * universe, not after it releases into a separate page section.
+   */
+  'return:hero-ready': { visible: boolean };
+  /**
    * Fired whenever any frame-sequence scene advances to a newly-loaded
    * frame — the one wire connecting footage to interface. `brightness` is
    * that frame's average luma (0-1). Consumers (AmbientLayer, the Holo
