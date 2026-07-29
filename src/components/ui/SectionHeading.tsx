@@ -1,6 +1,6 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { cn } from '../../lib/utils';
+import { useMaterialize } from '../../hooks/useMaterialize';
 
 interface SectionHeadingProps {
   eyebrow?: string;
@@ -11,7 +11,13 @@ interface SectionHeadingProps {
   className?: string;
 }
 
-/** Consistent section header used across every section of the site. */
+/**
+ * Consistent section header used across every section of the site — this
+ * one component is why converting it to `.animate-materialize` (the same
+ * energy-born choreography every other piece of ATS interface uses)
+ * rewrites the entrance of the entire page in a single place, no more
+ * Framer Motion fade/slide anywhere a section begins.
+ */
 const SectionHeading: React.FC<SectionHeadingProps> = ({
   eyebrow,
   eyebrowIcon,
@@ -20,16 +26,16 @@ const SectionHeading: React.FC<SectionHeadingProps> = ({
   align = 'center',
   className,
 }) => {
+  const { ref, visible } = useMaterialize<HTMLDivElement>({ threshold: 0.15, rootMargin: '-80px' });
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-80px' }}
-      transition={{ duration: 0.6 }}
+    <div
+      ref={ref}
       className={cn(
         align === 'center' ? 'text-center mx-auto' : 'text-left',
         'max-w-2xl',
         align === 'center' && 'max-w-3xl',
+        visible ? 'animate-materialize' : 'opacity-0 blur-lg scale-[0.4] brightness-[2.2]',
         className,
       )}
     >
@@ -57,7 +63,7 @@ const SectionHeading: React.FC<SectionHeadingProps> = ({
           {description}
         </p>
       )}
-    </motion.div>
+    </div>
   );
 };
 

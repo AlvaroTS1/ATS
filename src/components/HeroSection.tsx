@@ -1,8 +1,9 @@
 import React, { Suspense, lazy } from 'react';
-import { motion } from 'framer-motion';
 import { ArrowRight, Sparkles, ChevronDown } from 'lucide-react';
 import { products } from '../data/products';
 import StatusBadge from './ui/StatusBadge';
+import { useMaterialize } from '../hooks/useMaterialize';
+import { cn } from '../lib/utils';
 
 // Code-split the WebGL scene (three.js) so it never blocks first paint.
 const AIHeroScene = lazy(() => import('./AIHeroScene'));
@@ -13,7 +14,19 @@ const stats = [
   { value: '100%', label: 'Foco em problemas reais' },
 ];
 
+/** `.animate-materialize`'s resting (pre-birth) state, shared by every staggered element below. */
+const dormant = 'opacity-0 blur-lg scale-[0.4] brightness-[2.2] pointer-events-none';
+
+/** `animate-materialize`'s two keyframes are comma-paired — see `HoloPanel.tsx` for why. */
+const materializeDelay = (ms: number) => ({ animationDelay: `${ms}ms, ${850 + ms}ms` });
+
 const HeroSection: React.FC = () => {
+  // One trigger for the whole Hero — every child below just staggers off
+  // it via its own delay, same "single visibility signal, N consumers"
+  // pattern the Holo Hall panels already use. No Framer Motion fade/slide:
+  // the Golden Rule is that nothing in this universe enters any other way.
+  const { ref, visible } = useMaterialize<HTMLDivElement>({ threshold: 0.2 });
+
   return (
     <section
       id="home"
@@ -29,38 +42,32 @@ const HeroSection: React.FC = () => {
         />
       </div>
 
-      <div className="container mx-auto px-4 md:px-6 relative z-10">
+      <div ref={ref} className="container mx-auto px-4 md:px-6 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-10 items-center">
           {/* Left: copy + CTAs */}
           <div className="lg:col-span-7 text-center lg:text-left">
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7 }}
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.04] border border-white/10 text-xs font-semibold text-gray-300 tracking-wide mb-7"
+            <div
+              className={cn('inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.04] border border-white/10 text-xs font-semibold text-gray-300 tracking-wide mb-7', visible ? 'animate-materialize' : dormant)}
+              style={visible ? materializeDelay(0) : undefined}
             >
               <Sparkles className="w-3.5 h-3.5 text-neon-cyan" />
               <span>O ecossistema de software inteligente da ATS</span>
-            </motion.div>
+            </div>
 
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.1 }}
-              className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight text-white leading-[1.05]"
+            <h1
+              className={cn('text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight text-white leading-[1.05]', visible ? 'animate-materialize' : dormant)}
+              style={visible ? materializeDelay(100) : undefined}
             >
               Tecnologia que resolve
               <br className="hidden sm:block" />{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-cyan via-glow-blue to-cyber-purple">
                 problemas reais.
               </span>
-            </motion.h1>
+            </h1>
 
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.35, duration: 0.8 }}
-              className="text-lg sm:text-xl text-gray-400 font-light leading-relaxed max-w-xl mx-auto lg:mx-0 mt-7"
+            <p
+              className={cn('text-lg sm:text-xl text-gray-400 font-light leading-relaxed max-w-xl mx-auto lg:mx-0 mt-7', visible ? 'animate-materialize' : dormant)}
+              style={visible ? materializeDelay(260) : undefined}
             >
               A{' '}
               <span className="text-white font-semibold">
@@ -69,13 +76,11 @@ const HeroSection: React.FC = () => {
               é uma empresa de tecnologia que reúne, em um só ecossistema,
               produtos inteligentes que resolvem problemas reais — de proteção
               familiar a assistentes de IA.
-            </motion.p>
+            </p>
 
-            <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.5 }}
-              className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mt-9"
+            <div
+              className={cn('flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mt-9', visible ? 'animate-materialize' : dormant)}
+              style={visible ? materializeDelay(400) : undefined}
             >
               <a
                 href="#solutions"
@@ -90,14 +95,12 @@ const HeroSection: React.FC = () => {
               >
                 Falar com a ATS
               </a>
-            </motion.div>
+            </div>
 
             {/* Stats strip */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.7, duration: 0.8 }}
-              className="grid grid-cols-3 gap-4 max-w-lg mx-auto lg:mx-0 mt-12 pt-8 border-t border-white/5"
+            <div
+              className={cn('grid grid-cols-3 gap-4 max-w-lg mx-auto lg:mx-0 mt-12 pt-8 border-t border-white/5', visible ? 'animate-materialize' : dormant)}
+              style={visible ? materializeDelay(540) : undefined}
             >
               {stats.map((s) => (
                 <div key={s.label} className="text-center lg:text-left">
@@ -109,16 +112,14 @@ const HeroSection: React.FC = () => {
                   </div>
                 </div>
               ))}
-            </motion.div>
+            </div>
           </div>
 
-          {/* Right: ecosystem core */}
+          {/* Right: ecosystem core — already a glass panel, so its birth reads as "vidro holográfico" settling into place */}
           <div className="lg:col-span-5">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, delay: 0.3 }}
-              className="relative mx-auto max-w-md lg:max-w-none"
+            <div
+              className={cn('relative mx-auto max-w-md lg:max-w-none', visible ? 'animate-materialize' : dormant)}
+              style={visible ? materializeDelay(180) : undefined}
             >
               <div className="absolute -inset-2 bg-gradient-to-tr from-neon-cyan/20 to-cyber-purple/20 rounded-3xl blur-2xl opacity-40" />
 
@@ -165,24 +166,25 @@ const HeroSection: React.FC = () => {
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Scroll indicator */}
-      <motion.a
+      <a
         href="#solutions"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.2, duration: 1 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 text-gray-500 hover:text-neon-cyan transition-colors"
+        className={cn(
+          'absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 text-gray-500 hover:text-neon-cyan transition-colors',
+          visible ? 'animate-materialize' : dormant,
+        )}
+        style={visible ? materializeDelay(760) : undefined}
       >
         <span className="text-[10px] uppercase tracking-[0.2em] font-semibold">
           Explorar
         </span>
         <ChevronDown className="w-5 h-5 animate-bounce" />
-      </motion.a>
+      </a>
     </section>
   );
 };
