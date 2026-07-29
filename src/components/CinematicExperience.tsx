@@ -40,7 +40,7 @@ const CinematicExperience: React.FC = () => {
   const nucleusCanvasRef = useRef<HTMLCanvasElement>(null);
   const portalCorridorCanvasRef = useRef<HTMLCanvasElement>(null);
   const holoHallCanvasRef = useRef<HTMLCanvasElement>(null);
-  const returnCanvasRef = useRef<HTMLCanvasElement>(null);
+  const hallCanvasRef = useRef<HTMLCanvasElement>(null);
   const ambientCanvasRef = useRef<HTMLCanvasElement>(null);
   const guardianPresenceCanvasRef = useRef<HTMLCanvasElement>(null);
   const cueRef = useRef<HTMLDivElement>(null);
@@ -64,7 +64,7 @@ const CinematicExperience: React.FC = () => {
     const nucleusCanvas = nucleusCanvasRef.current;
     const portalCorridorCanvas = portalCorridorCanvasRef.current;
     const holoHallCanvas = holoHallCanvasRef.current;
-    const returnCanvas = returnCanvasRef.current;
+    const hallCanvas = hallCanvasRef.current;
     const ambientCanvas = ambientCanvasRef.current;
     const guardianPresenceCanvas = guardianPresenceCanvasRef.current;
     if (
@@ -73,7 +73,7 @@ const CinematicExperience: React.FC = () => {
       !nucleusCanvas ||
       !portalCorridorCanvas ||
       !holoHallCanvas ||
-      !returnCanvas ||
+      !hallCanvas ||
       !ambientCanvas ||
       !guardianPresenceCanvas
     )
@@ -196,7 +196,7 @@ const CinematicExperience: React.FC = () => {
         nucleus: nucleusCanvas,
         'portal-corridor': portalCorridorCanvas,
         'holo-hall': holoHallCanvas,
-        return: returnCanvas,
+        hall: hallCanvas,
       });
       engine.preloadAll();
       // The engine missed every frame drawn before it existed — size it and
@@ -253,7 +253,7 @@ const CinematicExperience: React.FC = () => {
 
         {/* One continuous cinematic take (nucleus -> portal-corridor -> holo-hall -> return),
             stacked earliest-on-top so each fades away to reveal the next one underneath. */}
-        <canvas ref={returnCanvasRef} className="absolute inset-0 z-[-20] h-full w-full" />
+        <canvas ref={hallCanvasRef} className="absolute inset-0 z-[-20] h-full w-full" />
         <canvas ref={holoHallCanvasRef} className="absolute inset-0 z-[-10] h-full w-full" />
         <canvas ref={portalCorridorCanvasRef} className="absolute inset-0 z-0 h-full w-full" />
         <canvas ref={nucleusCanvasRef} className="absolute inset-0 z-20 h-full w-full" />

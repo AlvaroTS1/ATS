@@ -39,9 +39,16 @@ import type { SceneDurationConfig } from './types';
  * (two abstract orbs merging, no product name/branding), never connected
  * to the real "Fusion AI" roadmap entry in `data/products.ts`. That
  * product keeps existing in `RoadmapSection`; it just doesn't get an
- * unexplained cinematic beat. Its distance moved into `return`, which
- * needs the room for the Guardian's persistent presence (`GuardianPresence`)
- * and the in-universe Hero HUD landing inside it.
+ * unexplained cinematic beat. Its distance moved into the final stretch,
+ * which needs the room for the Guardian's persistent presence
+ * (`GuardianPresence`) and the in-universe Hero HUD landing inside it.
+ *
+ * V6: `return` became `hall`. The old scene was choreographed as a
+ * curtain call — camera pulling back, energy collapsing to a point, light
+ * dying, frame fading out — which was the single loudest source of the
+ * "the intro is over, now the site starts" feeling every other phase had
+ * been fighting. Inverted into an arrival: camera moves in, energy
+ * organizes into the volume of a room, light establishes and holds.
  *
  * V5.1 Fase E: `nucleus`'s overlap into `portal-corridor` rose from 0.05
  * to 0.12 — that boundary is where the visual language actually changes
@@ -56,7 +63,8 @@ export const SCENE_DURATIONS: SceneDurationConfig[] = [
   // curve during this stretch, not a separate scene mount.
   { id: 'portal-corridor', distance: 2250, overlap: 0.05 },
   { id: 'holo-hall', distance: 750, overlap: 0.12 },
-  // Last scene: no overlap needed — it settles to a calm ember and the
-  // pin releases into the (unchanged) Hero right after.
-  { id: 'return', distance: 1350 },
+  // The destination. No overlap after it: this is where the user arrives
+  // and stays, and the pin releases only once they've been inside it for
+  // a while — there is no moment where "the intro ends".
+  { id: 'hall', distance: 1350 },
 ];

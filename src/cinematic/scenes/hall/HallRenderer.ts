@@ -1,16 +1,20 @@
 import * as THREE from 'three';
 import { createParticleTexture } from '../../shared/particleTexture';
 import { createBloomComposer, type BloomComposer } from '../../shared/createBloomComposer';
-import type { ReturnState } from './ReturnAnimator';
+import type { HallState } from './HallAnimator';
 
 /**
- * Renders the collapse: ambient particles pull back toward the origin
- * while the camera slowly retreats and the core glow flares then dims —
- * ending in a calm, dim ember that the Hero can naturally fade up from.
+ * Renders the arrival: scattered energy organizes into the volume of a
+ * room while the camera moves in and the light establishes. Deliberately
+ * restrained per V6 art direction — the particles describe the space, and
+ * a single soft ambient glow sits it in place. No second light source, no
+ * extra sprite: the Guardian (`GuardianPresence`) and the destination
+ * (`HoloWall`) are the things that get to be looked at here.
+ *
  * Owns every Three.js resource it creates and disposes all of them on
  * unmount.
  */
-export class ReturnRenderer {
+export class HallRenderer {
   private scene: THREE.Scene | null = null;
   private camera: THREE.PerspectiveCamera | null = null;
   private renderer: THREE.WebGLRenderer | null = null;
@@ -27,7 +31,7 @@ export class ReturnRenderer {
 
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 100);
-    this.camera.position.set(0, 0, 6);
+    this.camera.position.set(0, 0, 9);
 
     this.renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, pixelRatioCap));
@@ -41,13 +45,15 @@ export class ReturnRenderer {
       size: 0.055,
       map: this.particleTexture,
       transparent: true,
-      opacity: 0.6,
+      opacity: 0.35,
       depthWrite: false,
       blending: THREE.AdditiveBlending,
       color: 0x29abe2,
     });
     this.scene.add(new THREE.Points(this.particleGeometry, this.particleMaterial));
 
+    // The room's own ambient light — large, soft, low. Establishes and
+    // holds; it is never the thing you look at.
     this.glowTexture = createParticleTexture();
     this.glowMaterial = new THREE.SpriteMaterial({
       map: this.glowTexture,
@@ -57,7 +63,8 @@ export class ReturnRenderer {
       blending: THREE.AdditiveBlending,
     });
     const glow = new THREE.Sprite(this.glowMaterial);
-    glow.scale.set(2.2, 2.2, 1);
+    glow.scale.set(9, 9, 1);
+    glow.position.set(0, 0, -3);
     this.scene.add(glow);
   }
 
@@ -69,16 +76,17 @@ export class ReturnRenderer {
     this.composer?.resize(cssWidth, cssHeight);
   }
 
-  render(state: ReturnState, crossfadeOpacity: number): void {
+  render(state: HallState, crossfadeOpacity: number): void {
     if (!this.renderer || !this.scene || !this.camera || !this.particleGeometry) return;
 
     this.camera.position.z = state.cameraZ;
-    const combinedOpacity = crossfadeOpacity * state.sceneFadeOpacity;
 
-    if (this.particleMaterial) this.particleMaterial.opacity = state.particleOpacity * combinedOpacity;
+    if (this.particleMaterial) this.particleMaterial.opacity = state.particleOpacity * crossfadeOpacity;
     this.particleGeometry.attributes.position.needsUpdate = true;
 
-    if (this.glowMaterial) this.glowMaterial.opacity = state.coreGlowOpacity * combinedOpacity;
+    // 0.09 ceiling: present enough to sit the room in space, far too low
+    // to read as an effect. Contention over spectacle.
+    if (this.glowMaterial) this.glowMaterial.opacity = state.ambientGlowOpacity * 0.09 * crossfadeOpacity;
 
     if (this.composer) this.composer.render();
     else this.renderer.render(this.scene, this.camera);
@@ -91,8 +99,8 @@ export class ReturnRenderer {
     this.glowMaterial?.dispose();
     this.glowTexture?.dispose();
     this.composer?.dispose();
-    // See GenesisRenderer.unmount() — forceContextLoss() frees the WebGL
-    // context immediately instead of waiting on garbage collection.
+    // forceContextLoss() frees the WebGL context immediately instead of
+    // waiting on garbage collection — see every other renderer here.
     this.renderer?.forceContextLoss();
     this.renderer?.dispose();
 

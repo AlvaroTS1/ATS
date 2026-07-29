@@ -14,9 +14,9 @@ const materializeDelay = (ms: number) => ({ animationDelay: `${ms}ms, ${850 + ms
 const dormant = 'opacity-0 blur-lg scale-[0.4] brightness-[2.2] pointer-events-none';
 
 /**
- * V5.1 Fase C: the Hero isn't a page section anymore — it's the interface
- * that materializes inside the still-pinned universe, once `return`'s
- * collapse has settled (`'return:hero-ready'`, emitted by `ReturnScene`).
+ * The Hero isn't a page section — it's the interface that materializes
+ * inside the still-pinned universe, once the arrival at the Hall has
+ * settled (`'hall:hero-ready'`, emitted by `HallScene`).
  * One holographic panel, not a two-column marketing block: same visual
  * grammar as `HoloPanel.tsx` (glass, emissive border, corner brackets),
  * anchored low so the Guardian — also present here, near his own second
@@ -27,7 +27,7 @@ const HeroHUD: React.FC = () => {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    return cinematicEvents.on('return:hero-ready', ({ visible }) => setVisible(visible));
+    return cinematicEvents.on('hall:hero-ready', ({ visible }) => setVisible(visible));
   }, []);
 
   return (

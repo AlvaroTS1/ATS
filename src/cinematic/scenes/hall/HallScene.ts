@@ -1,33 +1,40 @@
 import type { Scene, SceneAssets } from '../../types';
 import { getDeviceTier } from '../../../lib/deviceTier';
 import { cinematicEvents } from '../../EventBus';
-import { ReturnRenderer } from './ReturnRenderer';
-import { computeScatteredPositions, step, type ReturnBuffers, type ReturnState } from './ReturnAnimator';
+import { HallRenderer } from './HallRenderer';
+import {
+  computeRoomShell,
+  computeScatteredPositions,
+  step,
+  type HallBuffers,
+  type HallState,
+} from './HallAnimator';
 
-const SCATTER_SPREAD = 8;
-/** Fraction of the collapse where it's settled enough for the Hero HUD to be born (V5.1 Fase C) — still inside the pinned universe, never after it releases. */
+const SCATTER_SPREAD = 9;
+const ROOM_RADIUS = 4.2;
+/** Where the arrival has settled enough for the Hero HUD to be born — still deep inside the pin. */
 const HERO_READY_AT = 0.55;
 
 /**
- * "Retorno": every particle collapses back into the Núcleo as the camera
- * pulls away and the light dims. The Guardian's own farewell beat lives
- * in `GuardianPresence` (V5.1) now, driven by global progress alongside
- * this scene — not owned by it.
+ * "O Salão": the destination, not an ending. Scattered energy organizes
+ * into the volume of a room, the camera moves in, the light establishes
+ * and holds. This is where the user arrives and stays — the Guardian
+ * (`GuardianPresence`) and the destination structure (`HoloWall`) both
+ * live on top of it, driven by global progress rather than by this scene.
  */
-class ReturnScene implements Scene {
-  readonly id = 'return';
+class HallScene implements Scene {
+  readonly id = 'hall';
 
-  private readonly renderer = new ReturnRenderer();
-  private buffers: ReturnBuffers | null = null;
+  private readonly renderer = new HallRenderer();
+  private buffers: HallBuffers | null = null;
   private heroReadyVisible = false;
-  /** Frame-skipping (device tier 'low' only): this scene's `step()` mutates up to 500 particle positions per call — the one real per-frame cost among the procedural scenes. `render()` still runs every tick, just redrawing the last-computed positions, so motion never visibly stutters. */
+  /** Frame-skipping (device tier 'low' only): `step()` mutates up to 500 particle positions per call — the one real per-frame cost here. `render()` still runs every tick, redrawing the last-computed positions, so motion never visibly stutters. */
   private skipFrames = false;
   private frameSkipParity = 0;
-  private readonly state: ReturnState = {
-    cameraZ: 6,
-    particleOpacity: 0.6,
-    coreGlowOpacity: 0,
-    sceneFadeOpacity: 1,
+  private readonly state: HallState = {
+    cameraZ: 9,
+    particleOpacity: 0.35,
+    ambientGlowOpacity: 0,
   };
 
   async preload(_assets: SceneAssets): Promise<void> {
@@ -44,6 +51,7 @@ class ReturnScene implements Scene {
     this.buffers = {
       positions: Float32Array.from(startPositions),
       startPositions,
+      targetPositions: computeRoomShell(particleCount, ROOM_RADIUS),
     };
 
     this.renderer.mount(canvas, this.buffers.positions, pixelRatioCap);
@@ -60,7 +68,7 @@ class ReturnScene implements Scene {
     const shouldShowHero = localProgress >= HERO_READY_AT;
     if (shouldShowHero !== this.heroReadyVisible) {
       this.heroReadyVisible = shouldShowHero;
-      cinematicEvents.emit('return:hero-ready', { visible: shouldShowHero });
+      cinematicEvents.emit('hall:hero-ready', { visible: shouldShowHero });
     }
 
     if (this.skipFrames) {
@@ -80,6 +88,6 @@ class ReturnScene implements Scene {
   }
 }
 
-export function createReturnScene(): Scene {
-  return new ReturnScene();
+export function createHallScene(): Scene {
+  return new HallScene();
 }
