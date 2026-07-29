@@ -18,6 +18,34 @@ import SectionHeading from './ui/SectionHeading';
 import StatusBadge from './ui/StatusBadge';
 import ProductCTAs from './ui/ProductCTAs';
 import ProductMicroEnvironment from './ProductMicroEnvironment';
+import { useMaterialize } from '../hooks/useMaterialize';
+import { cn } from '../lib/utils';
+
+/** `.animate-materialize`'s resting (pre-birth) state — see `HeroHUD.tsx`. */
+const dormant = 'opacity-0 blur-lg scale-[0.4] brightness-[2.2] pointer-events-none';
+
+/**
+ * A product's own arrival, not a fade-in — same primitive as
+ * `HeroHUD`/`HoloPanel`, just wrapping whatever's inside instead of a
+ * fixed set of fields (mockups and copy are structurally very different
+ * per product).
+ */
+const Materialize: React.FC<{ children: React.ReactNode; className?: string; delayMs?: number }> = ({
+  children,
+  className,
+  delayMs = 0,
+}) => {
+  const { ref, visible } = useMaterialize<HTMLDivElement>({ threshold: 0.25 });
+  return (
+    <div
+      ref={ref}
+      className={cn(className, visible ? 'animate-materialize' : dormant)}
+      style={visible ? { animationDelay: `${delayMs}ms, ${850 + delayMs}ms` } : undefined}
+    >
+      {children}
+    </div>
+  );
+};
 
 const featureIcons = [Fingerprint, Users, Activity];
 
@@ -393,89 +421,53 @@ const AppsDevSection: React.FC = () => {
           description="Três produtos disponíveis agora — cada um resolvendo um problema real, com a mesma qualidade e identidade ATS."
         />
 
-        {/* Reencontra — its own atmosphere, not a static section background */}
-        <div
-          id="reencontra"
-          className="relative scroll-mt-28 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center mt-24 mb-32"
-        >
-          <ProductMicroEnvironment
-            product={reencontra}
-            className="absolute -inset-24 -z-10 pointer-events-none"
-          />
-          <motion.div
-            initial={{ opacity: 0, x: -40 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-            className="order-2 lg:order-1"
-          >
+      </div>
+
+      {/* Each product is an environment the user arrives in, not a section
+          scrolled past — full viewport height, its own atmosphere filling
+          the whole block (ProductMicroEnvironment, not a card border). */}
+      <div
+        id="reencontra"
+        className="relative scroll-mt-20 min-h-screen flex items-center overflow-hidden py-24"
+      >
+        <ProductMicroEnvironment product={reencontra} className="absolute inset-0 -z-10 pointer-events-none" />
+        <div className="container mx-auto px-4 md:px-6 relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          <Materialize className="order-2 lg:order-1" delayMs={0}>
             <ProductIntro product={reencontra} />
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, x: 40 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-            className="order-1 lg:order-2"
-          >
+          </Materialize>
+          <Materialize className="order-1 lg:order-2" delayMs={180}>
             <ReencontraMockup />
-          </motion.div>
+          </Materialize>
         </div>
+      </div>
 
-        {/* Fusion Buy AI (reversed) */}
-        <div
-          id="fusion-buy"
-          className="relative scroll-mt-28 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center mb-32"
-        >
-          <ProductMicroEnvironment
-            product={fusionBuy}
-            className="absolute -inset-24 -z-10 pointer-events-none"
-          />
-          <motion.div
-            initial={{ opacity: 0, x: -40 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-          >
+      <div
+        id="fusion-buy"
+        className="relative scroll-mt-20 min-h-screen flex items-center overflow-hidden py-24"
+      >
+        <ProductMicroEnvironment product={fusionBuy} className="absolute inset-0 -z-10 pointer-events-none" />
+        <div className="container mx-auto px-4 md:px-6 relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          <Materialize delayMs={0}>
             <FusionBuyMockup />
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, x: 40 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-          >
+          </Materialize>
+          <Materialize delayMs={180}>
             <ProductIntro product={fusionBuy} />
-          </motion.div>
+          </Materialize>
         </div>
+      </div>
 
-        {/* Coffee Break */}
-        <div
-          id="coffee-break"
-          className="relative scroll-mt-28 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center"
-        >
-          <ProductMicroEnvironment
-            product={coffee}
-            className="absolute -inset-24 -z-10 pointer-events-none"
-          />
-          <motion.div
-            initial={{ opacity: 0, x: -40 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-            className="order-2 lg:order-1"
-          >
+      <div
+        id="coffee-break"
+        className="relative scroll-mt-20 min-h-screen flex items-center overflow-hidden py-24"
+      >
+        <ProductMicroEnvironment product={coffee} className="absolute inset-0 -z-10 pointer-events-none" />
+        <div className="container mx-auto px-4 md:px-6 relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          <Materialize className="order-2 lg:order-1" delayMs={0}>
             <ProductIntro product={coffee} />
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, x: 40 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-            className="order-1 lg:order-2"
-          >
+          </Materialize>
+          <Materialize className="order-1 lg:order-2" delayMs={180}>
             <CoffeeBreakMockup />
-          </motion.div>
+          </Materialize>
         </div>
       </div>
     </section>
