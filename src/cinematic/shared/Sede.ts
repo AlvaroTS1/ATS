@@ -6,9 +6,53 @@ const GUARDIAN_VIDEO = '/cinematic/guardian/guardian.mp4';
 
 /** Arc span, in radians — wide enough to curve around the viewer, not a full ring. */
 const SPAN = Math.PI * 0.72;
-const WALL_RADIUS = 6;
-const WALL_HEIGHT = 5;
-const ARC_SEGMENTS = 56;
+
+/**
+ * Where the architecture meets the ground. Every shell rises from this
+ * single Y, which is what turns three curved surfaces into one building:
+ * things that share a ground plane read as built, things floating at
+ * their own heights read as decoration.
+ *
+ * Chosen so the ground line stays inside frame at the near shell's depth
+ * — the convergence of the floor toward the vanishing point is the
+ * strongest perspective cue in the whole composition, and it only works
+ * if you can see it.
+ */
+const GROUND_Y = -3;
+
+interface ShellSpec {
+  radius: number;
+  height: number;
+  /** Horizontal courses, ground upward. 2 = ground line and roof line only. */
+  arcs: number;
+  /** Vertical columns. These, not the arcs, are what read as monumental. */
+  ribs: number;
+  /** Baked into vertex colors, so depth is art-directed and not only fogged. */
+  intensity: number;
+}
+
+/**
+ * Three concentric shells at different depths, tallest and dimmest
+ * outermost. The brief asked for a monument occupying the scenery AND for
+ * restraint — those only conflict if scale and intensity are treated as
+ * the same dial. They aren't: big + dim + few lines is a monument, big +
+ * bright + many lines is clutter.
+ *
+ * So this is deliberately FEWER line segments than the single wall it
+ * replaces (308 vs 401 at high detail), spread across three depths
+ * instead of packed into one surface. Depth here comes from arrangement
+ * and parallax, never from quantity.
+ */
+const SHELLS: ReadonlyArray<ShellSpec> = [
+  { radius: 9.5, height: 15, arcs: 2, ribs: 9, intensity: 0.5 },
+  { radius: 6.5, height: 11, arcs: 3, ribs: 7, intensity: 0.8 },
+  { radius: 3.8, height: 7.5, arcs: 2, ribs: 5, intensity: 1 },
+];
+
+/** Radial floor lines joining the shells — the plaza the structure stands on. */
+const FLOOR_RAYS = 7;
+const FLOOR_INTENSITY = 0.4;
+const STRUCTURE_COLOR = new THREE.Color(0x29abe2);
 /** 9:16 source. */
 const GUARDIAN_ASPECT = 1280 / 720;
 const GUARDIAN_WIDTH = 2.6;
@@ -59,45 +103,83 @@ const POSE_CURVE: ReadonlyArray<Keyframe<SedePose>> = [
 ];
 
 /**
- * Horizontal arcs + vertical ribs, merged into ONE `LineSegments` — an
- * architectural elevation, not a 3D primitive. A wireframe cylinder reads
- * as a wireframe cylinder; spaced arcs read as built structure.
+ * The monument: three concentric shells standing on a shared plaza,
+ * merged into ONE `LineSegments` — an architectural elevation, not a 3D
+ * primitive. A wireframe cylinder reads as a wireframe cylinder; courses
+ * and columns rising off a floor read as built structure.
  *
- * Everything in a single geometry so the whole wall is one draw call.
+ * Everything in a single geometry so the whole building is one draw call,
+ * with per-shell brightness carried in vertex colors rather than in
+ * separate materials (which would have cost one draw call per depth).
+ *
  * (WebGL ignores `linewidth`, so these are always 1px — exactly the thin,
  * drafted look wanted here. Not a limitation to "fix".)
  */
-function buildWallGeometry(arcCount: number, ribCount: number): THREE.BufferGeometry {
-  const points: number[] = [];
+function buildMonumentGeometry(detail: 'high' | 'low'): THREE.BufferGeometry {
+  const segments = detail === 'high' ? 40 : 24;
+  const shells = detail === 'high'
+    ? SHELLS
+    : SHELLS.map((s) => ({ ...s, ribs: Math.max(3, s.ribs - 2) }));
+
+  const positions: number[] = [];
+  const colors: number[] = [];
   const halfSpan = SPAN / 2;
 
-  for (let a = 0; a < arcCount; a++) {
-    const y = WALL_HEIGHT * (a / (arcCount - 1) - 0.5);
-    // Arcs bow inward toward the top and bottom edges, so the wall reads as
-    // a curved surface rather than stacked identical rings.
-    const bow = 1 - Math.abs(y / (WALL_HEIGHT / 2)) * 0.18;
-    for (let s = 0; s < ARC_SEGMENTS; s++) {
-      const t0 = -halfSpan + (SPAN * s) / ARC_SEGMENTS;
-      const t1 = -halfSpan + (SPAN * (s + 1)) / ARC_SEGMENTS;
-      points.push(
-        Math.sin(t0) * WALL_RADIUS * bow, y, -Math.cos(t0) * WALL_RADIUS * bow,
-        Math.sin(t1) * WALL_RADIUS * bow, y, -Math.cos(t1) * WALL_RADIUS * bow,
-      );
+  const edge = (
+    x1: number, y1: number, z1: number,
+    x2: number, y2: number, z2: number,
+    intensity: number,
+  ): void => {
+    positions.push(x1, y1, z1, x2, y2, z2);
+    const r = STRUCTURE_COLOR.r * intensity;
+    const g = STRUCTURE_COLOR.g * intensity;
+    const b = STRUCTURE_COLOR.b * intensity;
+    colors.push(r, g, b, r, g, b);
+  };
+
+  /** Polar to world. -cos on Z so the span opens away from the camera. */
+  const px = (radius: number, angle: number) => Math.sin(angle) * radius;
+  const pz = (radius: number, angle: number) => -Math.cos(angle) * radius;
+
+  for (const shell of shells) {
+    for (let a = 0; a < shell.arcs; a++) {
+      const y = GROUND_Y + shell.height * (a / (shell.arcs - 1));
+      for (let s = 0; s < segments; s++) {
+        const t0 = -halfSpan + (SPAN * s) / segments;
+        const t1 = -halfSpan + (SPAN * (s + 1)) / segments;
+        edge(
+          px(shell.radius, t0), y, pz(shell.radius, t0),
+          px(shell.radius, t1), y, pz(shell.radius, t1),
+          shell.intensity,
+        );
+      }
+    }
+
+    // Columns: dead straight, ground to roof. The previous wall bowed its
+    // verticals inward, which made it read as a curved SURFACE — a screen.
+    // Straight columns standing on a floor read as a BUILDING.
+    for (let r = 0; r < shell.ribs; r++) {
+      const angle = -halfSpan + (SPAN * r) / (shell.ribs - 1);
+      const x = px(shell.radius, angle);
+      const z = pz(shell.radius, angle);
+      edge(x, GROUND_Y, z, x, GROUND_Y + shell.height, z, shell.intensity);
     }
   }
 
-  for (let r = 0; r < ribCount; r++) {
-    const angle = -halfSpan + (SPAN * r) / (ribCount - 1);
-    const bowTop = 1 - 0.18;
-    const top = WALL_HEIGHT / 2;
-    points.push(
-      Math.sin(angle) * WALL_RADIUS * bowTop, top, -Math.cos(angle) * WALL_RADIUS * bowTop,
-      Math.sin(angle) * WALL_RADIUS * bowTop, -top, -Math.cos(angle) * WALL_RADIUS * bowTop,
+  const innerRadius = Math.min(...shells.map((s) => s.radius));
+  const outerRadius = Math.max(...shells.map((s) => s.radius));
+  for (let i = 0; i < FLOOR_RAYS; i++) {
+    const angle = -halfSpan + (SPAN * i) / (FLOOR_RAYS - 1);
+    edge(
+      px(innerRadius, angle), GROUND_Y, pz(innerRadius, angle),
+      px(outerRadius, angle), GROUND_Y, pz(outerRadius, angle),
+      FLOOR_INTENSITY,
     );
   }
 
   const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute('position', new THREE.Float32BufferAttribute(points, 3));
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
   return geometry;
 }
 
@@ -170,9 +252,13 @@ export class Sede {
     this.scene.add(this.rimLight);
     this.scene.add(new THREE.AmbientLight(0x0a1622, 0.5));
 
-    this.wallGeometry = buildWallGeometry(detail === 'high' ? 7 : 5, detail === 'high' ? 9 : 6);
+    this.wallGeometry = buildMonumentGeometry(detail);
     this.wallMaterial = new THREE.LineBasicMaterial({
-      color: 0x29abe2,
+      // White, because the hue now lives in the vertex colors — the
+      // material color multiplies them, so anything but white would
+      // double-tint the structure.
+      color: 0xffffff,
+      vertexColors: true,
       transparent: true,
       opacity: 0,
       blending: THREE.AdditiveBlending,
@@ -237,12 +323,29 @@ export class Sede {
     if (this.wall) {
       this.wall.position.z = pose.wallZ;
       this.wall.scale.setScalar(pose.wallScale);
+      // A few degrees of yaw across the whole journey. Not a keyframe
+      // channel, because it isn't a beat — it's the continuous
+      // consequence of approaching something slightly off-axis. The
+      // parallax it creates BETWEEN the three shells is what makes the
+      // depth legible; without it they flatten back into one surface, no
+      // matter how far apart they actually are.
+      this.wall.rotation.y = -0.09 + this.progress * 0.14;
     }
     if (this.wallMaterial) this.wallMaterial.opacity = pose.wallOpacity;
 
     if (this.fog) {
-      this.fog.near = 2.6 + (1 - pose.guardianScale) * 1.4;
-      this.fog.far = 14 - (1 - pose.wallScale) * 3;
+      // Fog has to reach past the monument's far shell, or it deletes it.
+      // The previous values (far = 14) put the wall's own core at 100%
+      // fogged and even its nearest edge at 91% — the structure was never
+      // actually visible, which read as "weak" and invited turning the
+      // opacity up. The real fix is range: keep the gradient, extend it
+      // far enough that near structure is crisp and far structure
+      // dissolves, instead of everything past arm's reach being erased.
+      //
+      // `near` stays below the Guardian's own distance from camera (6) so
+      // he is never fogged; he is the subject, not atmosphere.
+      this.fog.near = 4.5 + (1 - pose.wallScale) * 1.5;
+      this.fog.far = 16 + pose.wallScale * 14;
     }
     if (this.rimLight) this.rimLight.intensity = 0.55 + pose.guardianOpacity * 0.55;
 
