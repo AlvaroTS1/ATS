@@ -9,6 +9,7 @@ import { SCENE_DURATIONS } from '../cinematic/timeline.config';
 import { getHoloHallFramePath, HOLOHALL_FRAME_COUNT } from '../cinematic/scenes/holohall/holohall.assets';
 import { AmbientLayer } from '../cinematic/shared/AmbientLayer';
 import type { GuardianPresence } from '../cinematic/shared/GuardianPresence';
+import type { HoloWall } from '../cinematic/shared/HoloWall';
 import { cinematicEvents } from '../cinematic/EventBus';
 import { intToRgb } from '../cinematic/shared/colorLerp';
 import { getDeviceTier } from '../lib/deviceTier';
@@ -43,10 +44,12 @@ const CinematicExperience: React.FC = () => {
   const hallCanvasRef = useRef<HTMLCanvasElement>(null);
   const ambientCanvasRef = useRef<HTMLCanvasElement>(null);
   const guardianPresenceCanvasRef = useRef<HTMLCanvasElement>(null);
+  const holoWallCanvasRef = useRef<HTMLCanvasElement>(null);
   const cueRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<SceneEngine | null>(null);
   const ambientLayerRef = useRef<AmbientLayer | null>(null);
   const guardianPresenceRef = useRef<GuardianPresence | null>(null);
+  const holoWallRef = useRef<HoloWall | null>(null);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
   useEffect(() => {
@@ -67,6 +70,7 @@ const CinematicExperience: React.FC = () => {
     const hallCanvas = hallCanvasRef.current;
     const ambientCanvas = ambientCanvasRef.current;
     const guardianPresenceCanvas = guardianPresenceCanvasRef.current;
+    const holoWallCanvas = holoWallCanvasRef.current;
     if (
       !wrapper ||
       !pin ||
@@ -75,7 +79,8 @@ const CinematicExperience: React.FC = () => {
       !holoHallCanvas ||
       !hallCanvas ||
       !ambientCanvas ||
-      !guardianPresenceCanvas
+      !guardianPresenceCanvas ||
+      !holoWallCanvas
     )
       return;
 
@@ -101,6 +106,7 @@ const CinematicExperience: React.FC = () => {
       void guardianPresence.mount(guardianPresenceCanvas, getDeviceTier() === 'high' ? 2 : 1.5);
     });
 
+
     // A focused product (see HoloProductPanels) leans the whole ambience
     // toward its brand color — the environment itself reacts, not just the panel.
     const unsubscribeProductStage = cinematicEvents.on('products:stage', ({ color }) => {
@@ -119,11 +125,24 @@ const CinematicExperience: React.FC = () => {
     let smoothedProgress = 0;
     let easeRafId: number | null = null;
 
+    // The destination, visible from the start — see HoloWall.ts. Same
+    // dynamic-import discipline as the Guardian, for the same reason.
+    import('../cinematic/shared/HoloWall').then(({ HoloWall }) => {
+      if (cancelled) return;
+      const tier = getDeviceTier();
+      const holoWall = new HoloWall();
+      holoWallRef.current = holoWall;
+      holoWall.mount(holoWallCanvas, tier === 'high' ? 2 : 1.5, tier);
+      holoWall.resize(pin.clientWidth, pin.clientHeight);
+      holoWall.setProgress(smoothedProgress);
+    });
+
     /** Sizing is a resize concern, not a per-frame one — kept off the eased loop. */
     const resizeWorld = () => {
       engineRef.current?.resizeAll(pin.clientWidth, pin.clientHeight);
       ambientLayerRef.current?.resize(pin.clientWidth, pin.clientHeight);
       guardianPresenceRef.current?.resize(pin.clientWidth, pin.clientHeight);
+      holoWallRef.current?.resize(pin.clientWidth, pin.clientHeight);
     };
 
     /** Everything that lives on scroll progress reads the SMOOTHED value. */
@@ -131,6 +150,7 @@ const CinematicExperience: React.FC = () => {
       engineRef.current?.tick(p);
       ambientLayerRef.current?.setScrollProgress(p);
       guardianPresenceRef.current?.setProgress(p);
+      holoWallRef.current?.setProgress(p);
       if (cueRef.current) {
         cueRef.current.style.opacity = p < 0.04 ? String(1 - p / 0.04) : '0';
       }
@@ -219,6 +239,8 @@ const CinematicExperience: React.FC = () => {
       ambientLayerRef.current = null;
       guardianPresenceRef.current?.unmount();
       guardianPresenceRef.current = null;
+      holoWallRef.current?.unmount();
+      holoWallRef.current = null;
       unsubscribeProductStage();
     };
   }, [prefersReducedMotion]);
@@ -257,6 +279,11 @@ const CinematicExperience: React.FC = () => {
         <canvas ref={holoHallCanvasRef} className="absolute inset-0 z-[-10] h-full w-full" />
         <canvas ref={portalCorridorCanvasRef} className="absolute inset-0 z-0 h-full w-full" />
         <canvas ref={nucleusCanvasRef} className="absolute inset-0 z-20 h-full w-full" />
+
+        {/* The destination — always present, far away at first. Above the
+            footage because the footage is opaque (see HoloWall.ts), but
+            below the Guardian: he stands in front of it, curating it. */}
+        <canvas ref={holoWallCanvasRef} className="absolute inset-0 z-[21] h-full w-full pointer-events-none" />
 
         {/* The Guardian — a persistent inhabitant, not a scene, so he sits
             above every region canvas rather than inside the stack. See

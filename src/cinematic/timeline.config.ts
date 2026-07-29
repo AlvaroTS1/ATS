@@ -63,8 +63,9 @@ export const SCENE_DURATIONS: SceneDurationConfig[] = [
   // curve during this stretch, not a separate scene mount.
   { id: 'portal-corridor', distance: 2250, overlap: 0.05 },
   { id: 'holo-hall', distance: 750, overlap: 0.12 },
-  // The destination. No overlap after it: this is where the user arrives
-  // and stays, and the pin releases only once they've been inside it for
-  // a while — there is no moment where "the intro ends".
-  { id: 'hall', distance: 1350 },
+  // The destination, and deliberately the LONGEST region of the journey:
+  // this is where the user arrives and stays, so it gets the most room.
+  // No overlap after it — the pin releases only once they've been inside
+  // it a good while, so there is no moment where "the intro ends".
+  { id: 'hall', distance: 2000 },
 ];
