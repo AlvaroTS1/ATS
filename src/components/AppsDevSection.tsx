@@ -18,29 +18,27 @@ import SectionHeading from './ui/SectionHeading';
 import StatusBadge from './ui/StatusBadge';
 import ProductCTAs from './ui/ProductCTAs';
 import ProductMicroEnvironment from './ProductMicroEnvironment';
-import { useMaterialize } from '../hooks/useMaterialize';
+import { useReveal } from '../hooks/useReveal';
+import { REVEAL_DORMANT, revealDelay } from '../lib/reveal';
 import { cn } from '../lib/utils';
 
-/** `.animate-materialize`'s resting (pre-birth) state — see `HeroHUD.tsx`. */
-const dormant = 'opacity-0 blur-lg scale-[0.4] brightness-[2.2] pointer-events-none';
-
 /**
- * A product's own arrival, not a fade-in — same primitive as
- * `HeroHUD`/`HoloPanel`, just wrapping whatever's inside instead of a
- * fixed set of fields (mockups and copy are structurally very different
- * per product).
+ * A product resolving into focus, not fading or arriving — same primitive
+ * as `HeroHUD`/`HoloPanel` (`lib/reveal.ts`), just wrapping whatever's
+ * inside instead of a fixed set of fields (mockups and copy are
+ * structurally very different per product).
  */
-const Materialize: React.FC<{ children: React.ReactNode; className?: string; delayMs?: number }> = ({
+const Reveal: React.FC<{ children: React.ReactNode; className?: string; delayMs?: number }> = ({
   children,
   className,
   delayMs = 0,
 }) => {
-  const { ref, visible } = useMaterialize<HTMLDivElement>({ threshold: 0.25 });
+  const { ref, visible } = useReveal<HTMLDivElement>({ threshold: 0.25 });
   return (
     <div
       ref={ref}
-      className={cn(className, visible ? 'animate-materialize' : dormant)}
-      style={visible ? { animationDelay: `${delayMs}ms, ${850 + delayMs}ms` } : undefined}
+      className={cn(className, visible ? 'animate-reveal' : REVEAL_DORMANT)}
+      style={visible ? revealDelay(delayMs) : undefined}
     >
       {children}
     </div>
@@ -432,12 +430,12 @@ const AppsDevSection: React.FC = () => {
       >
         <ProductMicroEnvironment product={reencontra} className="absolute inset-0 -z-10 pointer-events-none" />
         <div className="container mx-auto px-4 md:px-6 relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          <Materialize className="order-2 lg:order-1" delayMs={0}>
+          <Reveal className="order-2 lg:order-1" delayMs={0}>
             <ProductIntro product={reencontra} />
-          </Materialize>
-          <Materialize className="order-1 lg:order-2" delayMs={180}>
+          </Reveal>
+          <Reveal className="order-1 lg:order-2" delayMs={180}>
             <ReencontraMockup />
-          </Materialize>
+          </Reveal>
         </div>
       </div>
 
@@ -447,12 +445,12 @@ const AppsDevSection: React.FC = () => {
       >
         <ProductMicroEnvironment product={fusionBuy} className="absolute inset-0 -z-10 pointer-events-none" />
         <div className="container mx-auto px-4 md:px-6 relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          <Materialize delayMs={0}>
+          <Reveal delayMs={0}>
             <FusionBuyMockup />
-          </Materialize>
-          <Materialize delayMs={180}>
+          </Reveal>
+          <Reveal delayMs={180}>
             <ProductIntro product={fusionBuy} />
-          </Materialize>
+          </Reveal>
         </div>
       </div>
 
@@ -462,12 +460,12 @@ const AppsDevSection: React.FC = () => {
       >
         <ProductMicroEnvironment product={coffee} className="absolute inset-0 -z-10 pointer-events-none" />
         <div className="container mx-auto px-4 md:px-6 relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          <Materialize className="order-2 lg:order-1" delayMs={0}>
+          <Reveal className="order-2 lg:order-1" delayMs={0}>
             <ProductIntro product={coffee} />
-          </Materialize>
-          <Materialize className="order-1 lg:order-2" delayMs={180}>
+          </Reveal>
+          <Reveal className="order-1 lg:order-2" delayMs={180}>
             <CoffeeBreakMockup />
-          </Materialize>
+          </Reveal>
         </div>
       </div>
     </section>

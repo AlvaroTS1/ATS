@@ -100,40 +100,54 @@ body {
 }
 
 /*
- * Materialization — the one way ANY piece of interface is allowed to
- * enter in the ATS V4 universe: energy converging into a solid object,
- * never a plain fade/slide. Six stages: gathering energy → particles
- * converging → glow intensifying → structure forming → materializing →
- * settled solid. Originally built for `components/cinematic-overlays/HoloPanel.tsx`;
- * shared here so Hero/section content can adopt the exact same birth
- * choreography instead of Framer Motion fade/slide.
+ * Revelation — the one way ANY piece of interface is allowed to appear in
+ * the ATS V7 universe. See `lib/reveal.ts` for the full reasoning and for
+ * the constants that must stay in sync with these keyframes.
+ *
+ * This REPLACED `materialize`, which grew every element from scale(0.25).
+ * Growing communicates "this did not exist a moment ago" — birth — and
+ * V7's absolute rule is that nothing is born, nothing enters, nothing
+ * slides. Content that assembles itself reads as a document being built
+ * on top of a scene, which is the exact perception this whole version
+ * exists to destroy.
+ *
+ * So: no transform, at all. The object was always there, at final size in
+ * final position — out of focus and blown out by light. The camera pulls
+ * focus and it resolves. The energetic quality survives (glow collapsing
+ * into a solid edge); the "it wasn't here" tell does not.
+ *
+ * The 0% frame must match `REVEAL_DORMANT` in `lib/reveal.ts` exactly, or
+ * elements POP on the first frame of the animation.
  */
-@keyframes materialize-emerge {
-  0%   { opacity: 0;    filter: blur(24px) brightness(4)   saturate(2.2); transform: scale(0.25); }
-  20%  { opacity: 0.35; filter: blur(16px) brightness(3.2) saturate(2);   transform: scale(0.45); }
-  40%  { opacity: 0.55; filter: blur(10px) brightness(2.4) saturate(1.7); transform: scale(0.65); }
-  60%  { opacity: 0.75; filter: blur(5px)  brightness(1.7) saturate(1.4); transform: scale(0.85); }
-  80%  { opacity: 0.92; filter: blur(1.5px) brightness(1.2); transform: scale(0.97); }
-  100% { opacity: 1;    filter: blur(0)    brightness(1);   transform: scale(1); }
+@keyframes reveal-focus {
+  0%   { opacity: 0;    filter: blur(14px) brightness(2.2) saturate(1.5); }
+  40%  { opacity: 0.5;  filter: blur(7px)  brightness(1.7) saturate(1.28); }
+  75%  { opacity: 0.88; filter: blur(2px)  brightness(1.22) saturate(1.1); }
+  100% { opacity: 1;    filter: blur(0)    brightness(1)   saturate(1); }
 }
 
-/* Once solid, a materialized element never sits perfectly still — "permanece vivo". */
-@keyframes materialize-idle-breathe {
+/* Once resolved, a revealed element never sits perfectly still — "permanece vivo". */
+@keyframes reveal-idle-breathe {
   0%, 100% { filter: brightness(1) saturate(1); }
   50%      { filter: brightness(1.05) saturate(1.08); }
 }
 
 /*
  * Both animations in ONE shorthand declaration — `animation` is not
- * additive across separate classes, so applying "emerge" and "idle" as two
+ * additive across separate classes, so applying "focus" and "idle" as two
  * different utility classes would just let the second silently replace the
  * first. Combined here so `style.animationDelay` (a comma-separated list)
  * can stagger both halves together per-element from JS.
+ *
+ * 1100ms, slower than the 850ms it replaces: the old timing had to be
+ * quick because a big scale change looks wrong when it lingers. A focus
+ * pull is the opposite — hurrying it makes it read as a fade. The easing
+ * decelerates hard into sharpness, the way a lens settles.
  */
-.animate-materialize {
+.animate-reveal {
   animation:
-    materialize-emerge 850ms cubic-bezier(0.16, 1, 0.3, 1) forwards,
-    materialize-idle-breathe 4.5s ease-in-out infinite 850ms;
+    reveal-focus 1100ms cubic-bezier(0.22, 1, 0.36, 1) forwards,
+    reveal-idle-breathe 4.5s ease-in-out infinite 1100ms;
 }
 
 /*

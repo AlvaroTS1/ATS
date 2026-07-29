@@ -1,15 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 
 /**
- * The one way any piece of ATS interface is allowed to enter: born from
- * energy (`.animate-materialize` in `index.css` — the same choreography
- * `HoloPanel.tsx` uses inside the cinematic experience), never a plain
- * Framer Motion fade/slide. Fires once, the first time the element enters
- * the viewport — `prefers-reduced-motion` is already handled globally
- * (see `index.css`), so this hook doesn't need its own reduced-motion
- * branch.
+ * The one way any piece of ATS interface is allowed to appear: resolved
+ * into focus (`.animate-reveal` in `index.css`, `lib/reveal.ts` — the
+ * same choreography `HoloPanel.tsx` uses inside the cinematic
+ * experience), never a plain Framer Motion fade/slide, and never born.
+ * Fires once, the first time the element enters the viewport —
+ * `prefers-reduced-motion` is already handled globally (see `index.css`),
+ * so this hook doesn't need its own reduced-motion branch.
  */
-export function useMaterialize<T extends HTMLElement>(options?: {
+export function useReveal<T extends HTMLElement>(options?: {
   threshold?: number;
   rootMargin?: string;
 }) {

@@ -3,6 +3,7 @@ import type { Product } from '../../data/products';
 import ProductCTAs from '../ui/ProductCTAs';
 import StatusBadge from '../ui/StatusBadge';
 import { cn } from '../../lib/utils';
+import { REVEAL_DORMANT, revealDelay } from '../../lib/reveal';
 
 interface HoloPanelProps {
   product: Product;
@@ -10,7 +11,7 @@ interface HoloPanelProps {
   /** Another panel in the group is being hovered — this one steps back, never hides. */
   dimmed: boolean;
   onHoverChange: (hovered: boolean) => void;
-  /** Stagger the birth sequence so panels don't all materialize at once. */
+  /** Stagger the focus pull so panels don't all resolve at once. */
   delayMs?: number;
   size?: 'sm' | 'lg';
 }
@@ -20,18 +21,19 @@ const MAX_TILT_DEG = 9;
 /**
  * A real, clickable React panel that reads as a holographic HUD screen —
  * matching the aesthetic of the Holo Hall footage it sits on top of. It
- * doesn't fade in; it's born: energy gathers, particles converge, glow
- * intensifies, the structure resolves, and only then does it settle solid
- * (`.animate-materialize` in `index.css` — the shared birth primitive
- * every piece of ATS interface uses, not a holo-panel-only effect). Once
- * solid it never sits perfectly still, and it tilts toward the cursor
- * like a physical sheet of glass — never a card floating over a video.
+ * doesn't fade in and it isn't born: it was already projected here, out
+ * of focus and blown out, and the camera resolves it
+ * (`.animate-reveal` / `lib/reveal.ts` — the shared primitive every piece
+ * of ATS interface uses, not a holo-panel-only effect). Once resolved it
+ * never sits perfectly still, and it tilts toward the cursor like a
+ * physical sheet of glass — never a card floating over a video.
  *
  * Three independently-controlled layers avoid fighting over the same CSS
- * property: birth/idle (opacity+filter+scale via animation), attention
+ * property: reveal/idle (opacity+filter via animation), attention
  * dimming (opacity+filter via a plain transition), and cursor tilt
  * (transform, via CSS custom properties so mousemove never triggers a
- * React re-render).
+ * React re-render). The reveal deliberately owns NO transform, which is
+ * what leaves the transform channel free for the tilt.
  */
 const HoloPanel: React.FC<HoloPanelProps> = ({
   product,
@@ -70,10 +72,10 @@ const HoloPanel: React.FC<HoloPanelProps> = ({
     <div
       className={cn(
         'transition-[opacity,filter] duration-500 ease-out',
-        visible ? 'animate-materialize' : 'opacity-0 blur-lg scale-[0.4] brightness-[2.2] pointer-events-none',
+        visible ? 'animate-reveal' : REVEAL_DORMANT,
         dimmed && 'opacity-60 brightness-[0.82]',
       )}
-      style={{ animationDelay: visible ? `${delayMs}ms, ${850 + delayMs}ms` : undefined }}
+      style={visible ? revealDelay(delayMs) : undefined}
     >
       <div
         ref={tiltRef}
