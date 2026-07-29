@@ -6,14 +6,14 @@ import type { SceneFactory } from './types';
  * — nothing else in the engine changes.
  *
  * `nucleus`/`portal-corridor`/`holo-hall` are frame-sequence scenes (real
- * cinematic footage) — cheap to register, no Three.js involved. `guardian`
- * and `return` pull in Three.js, so they're the ones dynamically imported:
- * that's what keeps the ~500KB library out of the app's main,
- * eagerly-parsed bundle.
+ * cinematic footage) — cheap to register, no Three.js involved. `return`
+ * pulls in Three.js, so it's dynamically imported: that's what keeps the
+ * ~500KB library out of the app's main, eagerly-parsed bundle. The
+ * Guardian (V5.1: `GuardianPresence`, `shared/GuardianPresence.ts`) is no
+ * longer a scene here — see `timeline.config.ts`.
  */
 export const SCENE_REGISTRY: Record<string, SceneFactory> = {
   nucleus: () => import('./scenes/nucleus/NucleusScene').then((m) => m.createNucleusScene()),
-  guardian: () => import('./scenes/guardian/GuardianScene').then((m) => m.createGuardianScene()),
   'portal-corridor': () =>
     import('./scenes/portalcorridor/PortalCorridorScene').then((m) => m.createPortalCorridorScene()),
   'holo-hall': () => import('./scenes/holohall/HoloHallScene').then((m) => m.createHoloHallScene()),

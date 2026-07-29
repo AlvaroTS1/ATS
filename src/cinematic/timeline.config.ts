@@ -22,10 +22,11 @@ import type { SceneDurationConfig } from './types';
  * are timed to finish dissolving just as this overlap begins, so they
  * never appear mid-cross-fade.
  *
- * `guardian` sits between `nucleus` and `portal-corridor` — "the core
- * pulses, and the Guardian wakes with it" — a real procedural Three.js
- * scene (not footage), so its overlap into `portal-corridor` IS a genuine
- * cross-fade (0.15) rather than a safety blend.
+ * V5.1: the Guardian is no longer a scene here — he's `GuardianPresence`
+ * (`shared/GuardianPresence.ts`), mounted once alongside `AmbientLayer`
+ * and driven by this Timeline's GLOBAL progress on a hand-authored pose
+ * curve, not a range of his own. He doesn't belong to one scene; he
+ * belongs to the whole journey.
  *
  * Distances below are the MOBILE-FIRST baseline (V4: "projete primeiro
  * para celulares, depois expanda para desktop" — most traffic is mobile,
@@ -44,8 +45,10 @@ import type { SceneDurationConfig } from './types';
  */
 export const SCENE_DURATIONS: SceneDurationConfig[] = [
   { id: 'nucleus', distance: 750, overlap: 0.05 },
-  { id: 'guardian', distance: 825, overlap: 0.15 },
-  { id: 'portal-corridor', distance: 1425, overlap: 0.05 },
+  // Absorbed the old discrete `guardian` scene's distance (825px) — the
+  // Guardian's "awakening" now happens on `GuardianPresence`'s own pose
+  // curve during this stretch, not a separate scene mount.
+  { id: 'portal-corridor', distance: 2250, overlap: 0.05 },
   { id: 'holo-hall', distance: 750, overlap: 0.12 },
   // Last scene: no overlap needed — it settles to a calm ember and the
   // pin releases into the (unchanged) Hero right after.
