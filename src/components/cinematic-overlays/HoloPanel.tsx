@@ -98,9 +98,15 @@ const HoloPanel: React.FC<HoloPanelProps> = ({
             backgroundColor: 'rgba(7, 11, 20, 0.55)',
             borderColor: `${product.accent.from}55`,
             boxShadow: `0 0 0 1px ${product.accent.from}22, 0 12px 40px -12px ${product.accent.glow}, inset 0 0 24px ${product.accent.from}11`,
-            filter: 'brightness(var(--ambient-light, 1))',
+            filter: 'brightness(var(--ambient-light))',
           }}
         >
+          {/* The room's colour on the glass, same wire as the Hero panel. */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 opacity-[0.09]"
+            style={{ background: 'linear-gradient(to top, var(--ambient-tint), transparent 70%)' }}
+          />
           {/* Cursor-following sheen — the "physical glass" reflection */}
           <div
             className="pointer-events-none absolute inset-0 transition-opacity duration-300"

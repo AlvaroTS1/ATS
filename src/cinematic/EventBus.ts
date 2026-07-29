@@ -47,11 +47,18 @@ export interface CinematicEventMap {
   /**
    * Fired whenever any frame-sequence scene advances to a newly-loaded
    * frame — the one wire connecting footage to interface. `brightness` is
-   * that frame's average luma (0-1). Consumers (AmbientLayer, the Holo
-   * panels' glow) lerp toward it instead of jumping, so the environment's
-   * light reads as *lit by* the footage, not layered independently on top.
+   * that frame's average luma (0-1); `r`/`g`/`b` are its average color
+   * (0-255), i.e. the temperature the shot is lit at. Consumers
+   * (AmbientLayer, the Holo panels, the Hero HUD) lerp toward both instead
+   * of jumping, so the interface reads as *lit by* the footage rather than
+   * layered independently on top.
+   *
+   * V7-E added the color channels. With brightness alone this wire was a
+   * dimmer: the interface tracked how bright the room was but was always
+   * lit by the same imaginary white lamp, no matter what color the room
+   * actually was.
    */
-  'cinematic:ambient-light': { brightness: number };
+  'cinematic:ambient-light': { brightness: number; r: number; g: number; b: number };
   [key: string]: unknown;
 }
 

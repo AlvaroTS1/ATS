@@ -3,6 +3,7 @@ import { ArrowRight, Sparkles } from 'lucide-react';
 import { cinematicEvents } from '../../cinematic/EventBus';
 import { cn } from '../../lib/utils';
 import { REVEAL_DORMANT, revealDelay } from '../../lib/reveal';
+import { useAmbientLight } from '../../hooks/useAmbientLight';
 
 const stats = [
   { value: '5', label: 'Produtos' },
@@ -11,6 +12,34 @@ const stats = [
 ];
 
 const dormant = REVEAL_DORMANT;
+
+/**
+ * The DOM's focal length, matched to the Sede's actual camera.
+ *
+ * `shared/Sede.ts` uses a PerspectiveCamera with a 40° VERTICAL fov, so
+ * its focal length in pixels is `(viewportHeight / 2) / tan(20°)`, which
+ * is `1.3738 * viewportHeight`. Feeding exactly that to CSS `perspective`
+ * makes DOM depth distort at the same rate as the 3D space behind it —
+ * a made-up round number like `1000px` would have the interface obeying a
+ * different lens than the architecture, which is the flat, screen-space
+ * feeling this phase exists to remove. In `vh` it also tracks resizes for
+ * free, with no JS.
+ */
+const CAMERA_PERSPECTIVE = 'calc(100vh * 1.3738)';
+
+/**
+ * A few degrees of lean, bottom-anchored, so the panel reads as a console
+ * standing on the Hall's floor rather than a sticker on the glass — the
+ * monument's own ground plane (`GROUND_Y` in `shared/Sede.ts`) is right
+ * there at the bottom of frame for it to stand on.
+ *
+ * Static, not scroll-driven, and that is on purpose twice over: the HUD
+ * only exists across the final stretch, where the camera barely moves, so
+ * animating this would cost a per-frame style recalc on the whole panel
+ * subtree to convey almost nothing — and V7's rule is that interface does
+ * not move. It has a fixed place in the space.
+ */
+const PANEL_LEAN = 'rotateX(5deg)';
 
 /**
  * The Hero isn't a page section — it's the interface that RESOLVES inside
@@ -26,6 +55,11 @@ const dormant = REVEAL_DORMANT;
  */
 const HeroHUD: React.FC = () => {
   const [visible, setVisible] = useState(false);
+  // Until V7-E this panel — the most prominent interface in the whole
+  // experience — was the ONE thing taking no light from the scene at all.
+  // The product panels were lit by the footage and the Hero was not, which
+  // made it the flattest, most pasted-on element on screen.
+  const litRef = useAmbientLight<HTMLDivElement>();
 
   useEffect(() => {
     return cinematicEvents.on('hall:hero-ready', ({ visible }) => setVisible(visible));
@@ -34,7 +68,7 @@ const HeroHUD: React.FC = () => {
   return (
     <div
       className="absolute inset-x-0 bottom-[6%] z-40 flex justify-center px-6"
-      style={{ pointerEvents: visible ? 'auto' : 'none' }}
+      style={{ pointerEvents: visible ? 'auto' : 'none', perspective: CAMERA_PERSPECTIVE }}
     >
       <div
         className={cn('relative w-full max-w-[360px] md:max-w-md', visible ? 'animate-reveal' : dormant)}
@@ -54,14 +88,35 @@ const HeroHUD: React.FC = () => {
         />
 
         <div
-          className="relative overflow-hidden rounded-2xl border backdrop-blur-md px-6 py-7 md:px-8 md:py-8"
+          ref={litRef}
+          className="ambient-lit relative overflow-hidden rounded-2xl border backdrop-blur-md px-6 py-7 md:px-8 md:py-8"
           style={{
             backgroundColor: 'rgba(7, 11, 20, 0.6)',
             borderColor: 'rgba(41, 171, 226, 0.35)',
             boxShadow:
               '0 0 0 1px rgba(41, 171, 226, 0.12), 0 20px 60px -20px rgba(41, 171, 226, 0.3), inset 0 0 30px rgba(41, 171, 226, 0.06)',
+            // Lit by the shot, and leaning on the Hall's floor. Smoothing
+            // comes from `.ambient-lit`, which transitions the registered
+            // custom property this reads — never this `filter` itself.
+            filter: 'brightness(var(--ambient-light))',
+            transform: PANEL_LEAN,
+            transformOrigin: 'bottom center',
           }}
         >
+          {/*
+            The room's colour washing over the glass. `--ambient-tint` is
+            the footage's own average colour, so when the shot is cyan the
+            panel is cyan-lit and when it warms, the panel warms — the
+            thing brightness alone could never do. The gradient itself
+            isn't transitionable, but it doesn't need to be: the colour it
+            reads is, so it re-resolves as that interpolates. Low opacity,
+            because this is light reflecting off glass, not a colour filter.
+          */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 opacity-10"
+            style={{ background: 'linear-gradient(to top, var(--ambient-tint), transparent 70%)' }}
+          />
         {(['top-0 left-0 border-t border-l', 'top-0 right-0 border-t border-r', 'bottom-0 left-0 border-b border-l', 'bottom-0 right-0 border-b border-r'] as const).map(
           (pos) => (
             <span key={pos} className={cn('absolute h-3 w-3 md:h-4 md:w-4 border-neon-cyan/60', pos)} />

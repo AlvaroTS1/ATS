@@ -3,7 +3,7 @@ import { AssetManager } from '../AssetManager';
 import { cinematicEvents } from '../EventBus';
 import { FrameSequenceRenderer } from './FrameSequenceRenderer';
 import { pickFrameIndex } from './FrameSequenceAnimator';
-import { sampleLuminance } from './sampleLuminance';
+import { sampleAmbient, type AmbientSample } from './sampleAmbient';
 
 export interface FrameSequenceSceneConfig {
   id: string;
@@ -24,10 +24,11 @@ export interface FrameSequenceSceneConfig {
  * (frame selection) and Renderer (drawing) stay shared and battle-tested
  * in one place instead of copy-pasted per scene.
  *
- * Every frame change also samples that frame's brightness and emits
- * `'cinematic:ambient-light'` — the one wire that lets `AmbientLayer` and
- * the Holo panels' glow track the footage's own lighting instead of
- * rendering as an independent layer on top of it.
+ * Every frame change also samples that frame's brightness AND average
+ * color and emits `'cinematic:ambient-light'` — the one wire that lets
+ * `AmbientLayer`, the Holo panels and the Hero HUD take both their level
+ * and their temperature from the footage, instead of rendering as an
+ * independent layer lit by an imaginary white lamp.
  */
 export function createFrameSequenceScene(config: FrameSequenceSceneConfig): Scene {
   const assetManager = new AssetManager();
@@ -35,6 +36,8 @@ export function createFrameSequenceScene(config: FrameSequenceSceneConfig): Scen
   const frames: string[] = Array.from({ length: config.frameCount }, (_, i) => config.getFramePath(i));
   let currentIndex = -1;
   let lastSampledIndex = -1;
+  /** Reused across emits so sampling allocates nothing per frame change. */
+  const ambient: AmbientSample = { brightness: 0.5, r: 255, g: 255, b: 255 };
 
   const doRender = (opacity: number): void => {
     const url = currentIndex >= 0 ? frames[currentIndex] : null;
@@ -74,7 +77,8 @@ export function createFrameSequenceScene(config: FrameSequenceSceneConfig): Scen
         lastSampledIndex = currentIndex;
         const image = assetManager.get(frames[currentIndex]);
         if (image) {
-          cinematicEvents.emit('cinematic:ambient-light', { brightness: sampleLuminance(image) });
+          sampleAmbient(image, ambient);
+          cinematicEvents.emit('cinematic:ambient-light', ambient);
         }
       }
       config.onProgress?.(localProgress);

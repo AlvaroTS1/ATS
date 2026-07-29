@@ -151,6 +151,54 @@ body {
 }
 
 /*
+ * The light of the shot, as typed custom properties (see
+ * `hooks/useAmbientLight.ts` and `cinematic/shared/sampleAmbient.ts`).
+ *
+ * Registration is what makes a custom property animatable at all: an
+ * unregistered one is an untyped token stream, so per spec it can only
+ * change discretely. With `syntax` declared, these interpolate, which lets
+ * the transition sit ON THE PROPERTY — and then every dependent `filter`,
+ * gradient and shadow follows for free as it ramps, with no per-frame
+ * JavaScript.
+ *
+ * That indirection is not a style preference. The tint is consumed as a
+ * `linear-gradient`, and gradients are NOT transitionable in CSS — so
+ * `transition: background` could never have smoothed the colour, no matter
+ * how it was written. Animating the colour the gradient READS is the only
+ * approach that works for both consumers at once.
+ *
+ * Caveat: transition behaviour itself is unverified. This preview pane
+ * produces no animation frames while hidden, so transitions never start
+ * there — measured, `getAnimations()` returns nothing for a transition
+ * that should exist. The declarations are spec-correct; how the ramp
+ * actually FEELS needs a real browser.
+ */
+@property --ambient-light {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 1;
+}
+
+@property --ambient-tint {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: rgb(41 171 226);
+}
+
+/*
+ * Carried by any element that takes its light from the footage. The
+ * signal arrives in steps — one per frame change of the video — and this
+ * turns those steps into a ramp. Slow, because light in a room changes
+ * more slowly than a video cuts, and a panel that snapped with every cut
+ * would announce that something is driving it.
+ */
+.ambient-lit {
+  transition:
+    --ambient-light 420ms linear,
+    --ambient-tint 420ms linear;
+}
+
+/*
  * Film grain (see `components/cinematic-overlays/FilmGrain.tsx`). Shifting
  * the tile by irregular offsets — never a regular sweep, which the eye
  * catches as a moving pattern. `steps(1)` on each segment makes it JUMP
