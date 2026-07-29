@@ -7,6 +7,8 @@ import { SCENE_ASSETS } from '../cinematic/sceneAssets';
 import { SCENE_DURATIONS } from '../cinematic/timeline.config';
 import { getHoloHallFramePath, HOLOHALL_FRAME_COUNT } from '../cinematic/scenes/holohall/holohall.assets';
 import { AmbientLayer } from '../cinematic/shared/AmbientLayer';
+import { cinematicEvents } from '../cinematic/EventBus';
+import { intToRgb } from '../cinematic/shared/colorLerp';
 import { getDeviceTier } from '../lib/deviceTier';
 import HoloProductPanels from './cinematic-overlays/HoloProductPanels';
 
@@ -77,6 +79,12 @@ const CinematicExperience: React.FC = () => {
     const ambientLayer = new AmbientLayer();
     ambientLayerRef.current = ambientLayer;
     ambientLayer.mount(ambientCanvas, getDeviceTier() === 'low' ? 16 : 42);
+
+    // A focused product (see HoloProductPanels) leans the whole ambience
+    // toward its brand color — the environment itself reacts, not just the panel.
+    const unsubscribeProductStage = cinematicEvents.on('products:stage', ({ color }) => {
+      ambientLayerRef.current?.setTint(color !== null ? intToRgb(color) : null);
+    });
 
     // Sizing the pin wrapper never waits on scene construction — it only
     // needs the timeline's total distance, known synchronously up front.
@@ -152,6 +160,7 @@ const CinematicExperience: React.FC = () => {
       engineRef.current = null;
       ambientLayerRef.current?.unmount();
       ambientLayerRef.current = null;
+      unsubscribeProductStage();
     };
   }, [prefersReducedMotion]);
 

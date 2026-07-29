@@ -34,8 +34,8 @@ export interface CinematicEventMap {
   'scene:enter': { id: string };
   'scene:complete': { id: string };
   'experience:complete': undefined;
-  /** Fired only when the in-focus product actually changes (not every frame). */
-  'products:stage': { productId: string; name: string; color: number };
+  /** Fired only when the in-focus product actually changes (not every frame). `null` fields mean nothing is focused — the environment settles back to ATS cyan. */
+  'products:stage': { productId: string | null; name: string | null; color: number | null };
   /** Fired only when the Holo Hall's interactive panel window is entered/exited (not every frame). */
   'holo-hall:panels': { visible: boolean };
   /**

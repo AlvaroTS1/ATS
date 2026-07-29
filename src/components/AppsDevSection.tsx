@@ -17,6 +17,7 @@ import { getProduct, type Product } from '../data/products';
 import SectionHeading from './ui/SectionHeading';
 import StatusBadge from './ui/StatusBadge';
 import ProductCTAs from './ui/ProductCTAs';
+import ProductMicroEnvironment from './ProductMicroEnvironment';
 
 const featureIcons = [Fingerprint, Users, Activity];
 
@@ -392,11 +393,15 @@ const AppsDevSection: React.FC = () => {
           description="Três produtos disponíveis agora — cada um resolvendo um problema real, com a mesma qualidade e identidade ATS."
         />
 
-        {/* Reencontra */}
+        {/* Reencontra — its own atmosphere, not a static section background */}
         <div
           id="reencontra"
-          className="scroll-mt-28 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center mt-24 mb-32"
+          className="relative scroll-mt-28 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center mt-24 mb-32"
         >
+          <ProductMicroEnvironment
+            product={reencontra}
+            className="absolute -inset-24 -z-10 pointer-events-none"
+          />
           <motion.div
             initial={{ opacity: 0, x: -40 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -420,8 +425,12 @@ const AppsDevSection: React.FC = () => {
         {/* Fusion Buy AI (reversed) */}
         <div
           id="fusion-buy"
-          className="scroll-mt-28 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center mb-32"
+          className="relative scroll-mt-28 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center mb-32"
         >
+          <ProductMicroEnvironment
+            product={fusionBuy}
+            className="absolute -inset-24 -z-10 pointer-events-none"
+          />
           <motion.div
             initial={{ opacity: 0, x: -40 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -443,8 +452,12 @@ const AppsDevSection: React.FC = () => {
         {/* Coffee Break */}
         <div
           id="coffee-break"
-          className="scroll-mt-28 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center"
+          className="relative scroll-mt-28 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center"
         >
+          <ProductMicroEnvironment
+            product={coffee}
+            className="absolute -inset-24 -z-10 pointer-events-none"
+          />
           <motion.div
             initial={{ opacity: 0, x: -40 }}
             whileInView={{ opacity: 1, x: 0 }}

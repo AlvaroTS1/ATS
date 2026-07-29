@@ -1,4 +1,5 @@
 import { cinematicEvents } from '../EventBus';
+import { createMoteSprite } from './moteSprite';
 
 interface Mote {
   baseX: number;
@@ -9,29 +10,7 @@ interface Mote {
   alpha: number;
 }
 
-/**
- * Same soft radial-glow look as `shared/particleTexture.ts`, but drawn
- * directly onto a plain canvas instead of wrapped in a `THREE.CanvasTexture`
- * — this layer must stay Three.js-free. It's mounted eagerly (always
- * breathing, never scroll-gated), so importing `three` here would drag the
- * ~500KB library back into the app's critical bundle, undoing the
- * code-splitting work from earlier phases.
- */
-function createMoteSprite(): HTMLCanvasElement {
-  const canvas = document.createElement('canvas');
-  canvas.width = 16;
-  canvas.height = 16;
-  const ctx = canvas.getContext('2d');
-  if (ctx) {
-    const grad = ctx.createRadialGradient(8, 8, 0, 8, 8, 8);
-    grad.addColorStop(0, 'rgba(0, 212, 255, 1)');
-    grad.addColorStop(0.6, 'rgba(41, 171, 226, 0.3)');
-    grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 16, 16);
-  }
-  return canvas;
-}
+const DEFAULT_TINT: [number, number, number] = [41, 171, 226]; // ATS brand cyan
 
 /**
  * The one thing every other cinematic layer deliberately does NOT do:
@@ -56,14 +35,23 @@ export class AmbientLayer {
   private ambientLight = 0.5;
   private targetLight = 0.5;
   private unsubscribeLight: (() => void) | null = null;
+  /** The color the dust/glow lean toward — a product's accent while it's in focus, ATS cyan otherwise. */
+  private currentTint: [number, number, number] = [...DEFAULT_TINT];
+  private targetTint: [number, number, number] = [...DEFAULT_TINT];
+  private textureTint: [number, number, number] = [...DEFAULT_TINT];
   private onVisibilityChange = (): void => {
     if (document.hidden) this.stop();
     else this.start();
   };
 
+  /** A product's accent color while it's the one in focus — `null` returns to ATS cyan. */
+  setTint(rgb: [number, number, number] | null): void {
+    this.targetTint = rgb ?? [...DEFAULT_TINT];
+  }
+
   mount(canvas: HTMLCanvasElement, moteCount: number): void {
     this.canvas = canvas;
-    this.texture = createMoteSprite();
+    this.texture = createMoteSprite(this.textureTint.join(', '));
     this.motes = Array.from({ length: moteCount }, () => ({
       baseX: Math.random(),
       baseY: Math.random(),
@@ -129,6 +117,22 @@ export class AmbientLayer {
     // "extremamente discreto", not a lighting rig.
     const lightMul = 0.75 + this.ambientLight * 0.5;
 
+    // Lerp the tint too, same reasoning as brightness — a product coming
+    // into focus should feel like it's warming the whole environment
+    // toward its color, not just the panel itself.
+    for (let i = 0; i < 3; i++) {
+      this.currentTint[i] += (this.targetTint[i] - this.currentTint[i]) * 0.05;
+    }
+    const tintDelta =
+      Math.abs(this.currentTint[0] - this.textureTint[0]) +
+      Math.abs(this.currentTint[1] - this.textureTint[1]) +
+      Math.abs(this.currentTint[2] - this.textureTint[2]);
+    if (tintDelta > 3) {
+      this.textureTint = [...this.currentTint];
+      this.texture = createMoteSprite(this.textureTint.map((v) => Math.round(v)).join(', '));
+    }
+    const tintRgb = this.currentTint.map((v) => Math.round(v)).join(', ');
+
     // Slow drifting dust — deterministic sine drift per ART_DIRECTION.md,
     // never Math.random() per frame.
     if (this.texture) {
@@ -152,8 +156,8 @@ export class AmbientLayer {
       cssH * 0.42,
       Math.max(cssW, cssH) * 0.55,
     );
-    gradient.addColorStop(0, `rgba(41, 171, 226, ${0.025 * breatheGlow * lightMul})`);
-    gradient.addColorStop(1, 'rgba(41, 171, 226, 0)');
+    gradient.addColorStop(0, `rgba(${tintRgb}, ${0.025 * breatheGlow * lightMul})`);
+    gradient.addColorStop(1, `rgba(${tintRgb}, 0)`);
     ctx.globalAlpha = 1;
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, cssW, cssH);

@@ -17,3 +17,13 @@ export function lerpColor(colorA: number, colorB: number, t: number): number {
 export function hexStringToInt(hex: string): number {
   return parseInt(hex.replace('#', ''), 16);
 }
+
+/** Parses a "#RRGGBB" string into an `[r, g, b]` triplet — for canvas `rgba()` strings. */
+export function hexStringToRgb(hex: string): [number, number, number] {
+  return intToRgb(hexStringToInt(hex));
+}
+
+/** Splits a 0xRRGGBB integer into an `[r, g, b]` triplet — for canvas `rgba()` strings. */
+export function intToRgb(color: number): [number, number, number] {
+  return [(color >> 16) & 0xff, (color >> 8) & 0xff, color & 0xff];
+}

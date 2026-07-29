@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { cinematicEvents } from '../../cinematic/EventBus';
 import { getProduct } from '../../data/products';
+import { hexStringToInt } from '../../cinematic/shared/colorLerp';
 import HoloPanel from './HoloPanel';
+import ProductMicroEnvironment from '../ProductMicroEnvironment';
 
 const reencontra = getProduct('reencontra')!;
 const fusionBuy = getProduct('fusion-buy')!;
@@ -40,6 +42,22 @@ const HoloProductPanels: React.FC = () => {
     });
   }, []);
 
+  useEffect(() => {
+    // Tells AmbientLayer (via CinematicExperience) to lean the whole
+    // environment's dust/glow toward whichever product is in focus — the
+    // same lerp-toward-brightness principle as `cinematic:ambient-light`,
+    // just for color instead of luma. `products:stage` existed as an
+    // unused seam since the Products scene days; this is its first
+    // real consumer.
+    const products = [fusionBuy, reencontra, coffeeBreak];
+    const focused = products.find((p) => p.id === hoveredId) ?? null;
+    cinematicEvents.emit('products:stage', {
+      productId: focused?.id ?? null,
+      name: focused?.name ?? null,
+      color: focused ? hexStringToInt(focused.accent.from) : null,
+    });
+  }, [hoveredId]);
+
   const dimmed = (id: string) => hoveredId !== null && hoveredId !== id;
 
   return (
@@ -50,8 +68,11 @@ const HoloProductPanels: React.FC = () => {
     >
       {/* Mobile: a swipeable row (orthogonal to the page's own vertical scroll,
           so it never fights the pin/scrub mechanism) — 3 full-size cards
-          simply don't fit a phone's width side by side. Desktop: centered row. */}
-      <div className="shrink-0 snap-center md:shrink">
+          simply don't fit a phone's width side by side. Desktop: centered row.
+          Each wrapper is its own micro-environment: the product's brand color
+          radiates outward from behind its own panel, not a shared backdrop. */}
+      <div className="relative shrink-0 snap-center md:shrink">
+        <ProductMicroEnvironment product={fusionBuy} active={!dimmed(fusionBuy.id)} className="absolute -inset-12 -z-10 pointer-events-none" />
         <HoloPanel
           product={fusionBuy}
           visible={visible}
@@ -60,7 +81,8 @@ const HoloProductPanels: React.FC = () => {
           delayMs={120}
         />
       </div>
-      <div className="shrink-0 snap-center md:shrink">
+      <div className="relative shrink-0 snap-center md:shrink">
+        <ProductMicroEnvironment product={reencontra} active={!dimmed(reencontra.id)} className="absolute -inset-12 -z-10 pointer-events-none" />
         <HoloPanel
           product={reencontra}
           visible={visible}
@@ -70,7 +92,8 @@ const HoloProductPanels: React.FC = () => {
           size="lg"
         />
       </div>
-      <div className="shrink-0 snap-center md:shrink">
+      <div className="relative shrink-0 snap-center md:shrink">
+        <ProductMicroEnvironment product={coffeeBreak} active={!dimmed(coffeeBreak.id)} className="absolute -inset-12 -z-10 pointer-events-none" />
         <HoloPanel
           product={coffeeBreak}
           visible={visible}
