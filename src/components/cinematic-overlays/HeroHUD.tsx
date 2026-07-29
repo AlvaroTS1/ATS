@@ -20,7 +20,7 @@ const dormant = 'opacity-0 blur-lg scale-[0.4] brightness-[2.2] pointer-events-n
  * One holographic panel, not a two-column marketing block: same visual
  * grammar as `HoloPanel.tsx` (glass, emissive border, corner brackets),
  * anchored low so the Guardian — also present here, near his own second
- * peak on `GuardianPresence`'s curve — reads clearly above it rather than
+ * peak on the Sede's curve — reads clearly above it rather than
  * competing for the same center of frame.
  */
 const HeroHUD: React.FC = () => {
@@ -41,7 +41,7 @@ const HeroHUD: React.FC = () => {
       >
         {/*
           The tether: one hair-thin line rising toward the structure above
-          (`HoloWall`), so the panel reads as PROJECTED BY this place rather
+          (`shared/Sede.ts`), so the panel reads as PROJECTED BY this place rather
           than floating over it. Sits outside the panel because the panel
           clips its own overflow, and inside the materialize wrapper so it
           is born with the panel rather than after it.

@@ -8,8 +8,8 @@ import type { HallState } from './HallAnimator';
  * room while the camera moves in and the light establishes. Deliberately
  * restrained per V6 art direction — the particles describe the space, and
  * a single soft ambient glow sits it in place. No second light source, no
- * extra sprite: the Guardian (`GuardianPresence`) and the destination
- * (`HoloWall`) are the things that get to be looked at here.
+ * extra sprite: the Sede (`shared/Sede.ts`) — the Guardian and his
+ * architecture — is the thing that gets to be looked at here.
  *
  * Owns every Three.js resource it creates and disposes all of them on
  * unmount.

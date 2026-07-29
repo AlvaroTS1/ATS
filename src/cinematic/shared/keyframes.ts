@@ -3,7 +3,7 @@ import { easeInOutCubic } from './easing';
 /**
  * Hand-authored pose curves over GLOBAL journey progress — the pattern
  * persistent layers use instead of belonging to a Timeline range
- * (`GuardianPresence`, `HoloWall`). Kept generic and zero-allocation:
+ * (`Sede`). Kept generic and zero-allocation:
  * writes into a caller-owned `out` object, same discipline as every
  * Animator in `scenes/`.
  */

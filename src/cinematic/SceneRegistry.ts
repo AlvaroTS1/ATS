@@ -9,7 +9,7 @@ import type { SceneFactory } from './types';
  * cinematic footage) — cheap to register, no Three.js involved. `hall`
  * pulls in Three.js, so it's dynamically imported: that's what keeps the
  * ~500KB library out of the app's main, eagerly-parsed bundle. The
- * Guardian (`shared/GuardianPresence.ts`) is not a scene here — see
+ * Guardian (`shared/Sede.ts`) is not a scene here — see
  * `timeline.config.ts`.
  */
 export const SCENE_REGISTRY: Record<string, SceneFactory> = {

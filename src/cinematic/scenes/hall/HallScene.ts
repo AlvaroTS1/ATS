@@ -19,8 +19,8 @@ const HERO_READY_AT = 0.55;
  * "O Salão": the destination, not an ending. Scattered energy organizes
  * into the volume of a room, the camera moves in, the light establishes
  * and holds. This is where the user arrives and stays — the Guardian
- * (`GuardianPresence`) and the destination structure (`HoloWall`) both
- * live on top of it, driven by global progress rather than by this scene.
+ * and his architecture (`shared/Sede.ts`) live on top of it, driven by
+ * global progress rather than by this scene.
  */
 class HallScene implements Scene {
   readonly id = 'hall';

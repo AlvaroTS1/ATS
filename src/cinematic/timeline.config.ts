@@ -22,8 +22,8 @@ import type { SceneDurationConfig } from './types';
  * are timed to finish dissolving just as this overlap begins, so they
  * never appear mid-cross-fade.
  *
- * V5.1: the Guardian is no longer a scene here — he's `GuardianPresence`
- * (`shared/GuardianPresence.ts`), mounted once alongside `AmbientLayer`
+ * V5.1: the Guardian is no longer a scene here — he lives in `Sede`
+ * (`shared/Sede.ts`), mounted once alongside `AmbientLayer`
  * and driven by this Timeline's GLOBAL progress on a hand-authored pose
  * curve, not a range of his own. He doesn't belong to one scene; he
  * belongs to the whole journey.
@@ -41,7 +41,7 @@ import type { SceneDurationConfig } from './types';
  * product keeps existing in `RoadmapSection`; it just doesn't get an
  * unexplained cinematic beat. Its distance moved into the final stretch,
  * which needs the room for the Guardian's persistent presence
- * (`GuardianPresence`) and the in-universe Hero HUD landing inside it.
+ * (`shared/Sede.ts`) and the in-universe Hero HUD landing inside it.
  *
  * V6: `return` became `hall`. The old scene was choreographed as a
  * curtain call — camera pulling back, energy collapsing to a point, light
@@ -59,7 +59,7 @@ import type { SceneDurationConfig } from './types';
 export const SCENE_DURATIONS: SceneDurationConfig[] = [
   { id: 'nucleus', distance: 750, overlap: 0.12 },
   // Absorbed the old discrete `guardian` scene's distance (825px) — the
-  // Guardian's "awakening" now happens on `GuardianPresence`'s own pose
+  // Guardian's "awakening" now happens on the Sede's own pose
   // curve during this stretch, not a separate scene mount.
   { id: 'portal-corridor', distance: 2250, overlap: 0.05 },
   { id: 'holo-hall', distance: 750, overlap: 0.12 },
