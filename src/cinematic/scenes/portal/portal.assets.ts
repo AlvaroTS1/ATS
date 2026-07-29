@@ -10,5 +10,5 @@ export function getPortalFramePath(index: number): string {
 export const PORTAL_ASSETS: SceneAssets = {
   id: 'portal',
   frames: Array.from({ length: PORTAL_FRAME_COUNT }, (_, i) => getPortalFramePath(i)),
-  preloadPriority: 1,
+  preloadPriority: 2,
 };

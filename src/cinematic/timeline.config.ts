@@ -21,9 +21,15 @@ import type { SceneDurationConfig } from './types';
  * interactive React panels (see `HOLOHALL_PANELS_HIDE_AT`) are timed to
  * finish dissolving just as this overlap begins, so they never appear
  * mid-cross-fade.
+ *
+ * `guardian` sits between `nucleus` and `portal` — "the core pulses, and
+ * the Guardian wakes with it" — a real procedural Three.js scene (not
+ * footage), so its overlap into `portal` IS a genuine cross-fade (0.15)
+ * rather than a safety blend.
  */
 export const SCENE_DURATIONS: SceneDurationConfig[] = [
   { id: 'nucleus', distance: 1000, overlap: 0.05 },
+  { id: 'guardian', distance: 1100, overlap: 0.15 },
   { id: 'portal', distance: 1000, overlap: 0.05 },
   { id: 'ecosystem-entry', distance: 1000, overlap: 0.05 },
   { id: 'holo-hall', distance: 1000, overlap: 0.12 },

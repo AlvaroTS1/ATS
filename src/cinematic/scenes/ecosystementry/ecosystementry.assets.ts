@@ -10,5 +10,5 @@ export function getEcosystemEntryFramePath(index: number): string {
 export const ECOSYSTEM_ENTRY_ASSETS: SceneAssets = {
   id: 'ecosystem-entry',
   frames: Array.from({ length: ECOSYSTEM_ENTRY_FRAME_COUNT }, (_, i) => getEcosystemEntryFramePath(i)),
-  preloadPriority: 2,
+  preloadPriority: 3,
 };

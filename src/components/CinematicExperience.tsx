@@ -28,6 +28,7 @@ const CinematicExperience: React.FC = () => {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const pinRef = useRef<HTMLDivElement>(null);
   const nucleusCanvasRef = useRef<HTMLCanvasElement>(null);
+  const guardianCanvasRef = useRef<HTMLCanvasElement>(null);
   const portalCanvasRef = useRef<HTMLCanvasElement>(null);
   const ecosystemEntryCanvasRef = useRef<HTMLCanvasElement>(null);
   const holoHallCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -52,6 +53,7 @@ const CinematicExperience: React.FC = () => {
     const wrapper = wrapperRef.current;
     const pin = pinRef.current;
     const nucleusCanvas = nucleusCanvasRef.current;
+    const guardianCanvas = guardianCanvasRef.current;
     const portalCanvas = portalCanvasRef.current;
     const ecosystemEntryCanvas = ecosystemEntryCanvasRef.current;
     const holoHallCanvas = holoHallCanvasRef.current;
@@ -62,6 +64,7 @@ const CinematicExperience: React.FC = () => {
       !wrapper ||
       !pin ||
       !nucleusCanvas ||
+      !guardianCanvas ||
       !portalCanvas ||
       !ecosystemEntryCanvas ||
       !holoHallCanvas ||
@@ -134,6 +137,7 @@ const CinematicExperience: React.FC = () => {
       engineRef.current = engine;
       engine.mountAll({
         nucleus: nucleusCanvas,
+        guardian: guardianCanvas,
         portal: portalCanvas,
         'ecosystem-entry': ecosystemEntryCanvas,
         'holo-hall': holoHallCanvas,
@@ -182,13 +186,14 @@ const CinematicExperience: React.FC = () => {
         <div className="absolute top-1/3 left-1/4 w-[520px] h-[520px] bg-neon-cyan/10 rounded-full blur-[140px]" />
         <div className="absolute bottom-1/3 right-1/4 w-[460px] h-[460px] bg-cyber-purple/10 rounded-full blur-[130px]" />
 
-        {/* One continuous 40s cinematic take (nucleus -> portal -> ecosystem-entry -> holo-hall),
+        {/* One continuous cinematic take (nucleus -> guardian -> portal -> ecosystem-entry -> holo-hall),
             stacked earliest-on-top so each fades away to reveal the next one underneath. */}
         <canvas ref={returnCanvasRef} className="absolute inset-0 z-[-30] h-full w-full" />
         <canvas ref={fusionAiCanvasRef} className="absolute inset-0 z-[-20] h-full w-full" />
         <canvas ref={holoHallCanvasRef} className="absolute inset-0 z-[-10] h-full w-full" />
         <canvas ref={ecosystemEntryCanvasRef} className="absolute inset-0 z-0 h-full w-full" />
         <canvas ref={portalCanvasRef} className="absolute inset-0 z-10 h-full w-full" />
+        <canvas ref={guardianCanvasRef} className="absolute inset-0 z-[15] h-full w-full" />
         <canvas ref={nucleusCanvasRef} className="absolute inset-0 z-20 h-full w-full" />
 
         {/* Always breathing, independent of scroll — see AmbientLayer.ts */}

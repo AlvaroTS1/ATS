@@ -7,12 +7,13 @@ import type { SceneFactory } from './types';
  *
  * `nucleus`/`portal`/`ecosystem-entry`/`holo-hall` are frame-sequence
  * scenes (real cinematic footage) — cheap to register, no Three.js
- * involved. `fusion-ai` and `return` are the only scenes that pull in
- * Three.js, so they're the only ones dynamically imported: that's what
- * keeps the ~500KB library out of the app's main, eagerly-parsed bundle.
+ * involved. `guardian`, `fusion-ai` and `return` pull in Three.js, so
+ * they're the ones dynamically imported: that's what keeps the ~500KB
+ * library out of the app's main, eagerly-parsed bundle.
  */
 export const SCENE_REGISTRY: Record<string, SceneFactory> = {
   nucleus: () => import('./scenes/nucleus/NucleusScene').then((m) => m.createNucleusScene()),
+  guardian: () => import('./scenes/guardian/GuardianScene').then((m) => m.createGuardianScene()),
   portal: () => import('./scenes/portal/PortalScene').then((m) => m.createPortalScene()),
   'ecosystem-entry': () =>
     import('./scenes/ecosystementry/EcosystemEntryScene').then((m) => m.createEcosystemEntryScene()),
