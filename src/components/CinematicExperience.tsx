@@ -14,6 +14,7 @@ import { intToRgb } from '../cinematic/shared/colorLerp';
 import { getDeviceTier } from '../lib/deviceTier';
 import HoloProductPanels from './cinematic-overlays/HoloProductPanels';
 import HeroHUD from './cinematic-overlays/HeroHUD';
+import FilmGrain from './cinematic-overlays/FilmGrain';
 
 /**
  * Mobile-first: `timeline.config.ts` distances ARE the mobile pacing.
@@ -281,6 +282,11 @@ const CinematicExperience: React.FC = () => {
 
         <HoloProductPanels />
         <HeroHUD />
+
+        {/* Above EVERYTHING, footage and interface alike — that is the whole
+            point: one shared surface is what stops the eye reading two
+            layers. See FilmGrain.tsx. */}
+        <FilmGrain />
 
         <div
           ref={cueRef}

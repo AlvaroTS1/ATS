@@ -136,3 +136,27 @@ body {
     materialize-idle-breathe 4.5s ease-in-out infinite 850ms;
 }
 
+/*
+ * Film grain (see `components/cinematic-overlays/FilmGrain.tsx`). Shifting
+ * the tile by irregular offsets — never a regular sweep, which the eye
+ * catches as a moving pattern. `steps(1)` on each segment makes it JUMP
+ * between positions like real per-frame grain instead of sliding.
+ *
+ * 8 steps over 0.7s ≈ 11fps, close to how film grain actually reads.
+ * Faster looks like TV static; slower looks like dirt on the lens.
+ */
+@keyframes film-grain-shift {
+  0%,  100% { background-position:   0px   0px; }
+  12.5%     { background-position: -37px  19px; }
+  25%       { background-position:  23px -41px; }
+  37.5%     { background-position: -53px -13px; }
+  50%       { background-position:  11px  47px; }
+  62.5%     { background-position:  44px -29px; }
+  75%       { background-position: -19px  31px; }
+  87.5%     { background-position:  31px   7px; }
+}
+
+.animate-film-grain {
+  animation: film-grain-shift 0.7s steps(1) infinite;
+}
+
