@@ -1,6 +1,16 @@
 # Relatório de Integração — 4 Vídeos Oficiais
 
-> **V2 (atual):** os 4 vídeos abaixo (`sitevideo1-4.mp4`, 16:9 paisagem, tomada
+> **V4 (atual):** arquitetura "Digital Experience" — o Guardião entra como
+> cena procedural própria (`guardian`, Three.js + `THREE.VideoTexture`, ver
+> `scenes/guardian/`), gerado via Higgsfield (Seedance 2.0). `portal` +
+> `ecosystem-entry` (V3) foram **fundidos** num único vídeo comissionado —
+> `portal-corridor` — um plano contínuo sem corte entre o portal e o
+> corredor, também via Higgsfield. Timeline atual:
+> `nucleus → guardian → portal-corridor → holo-hall → fusion-ai → return`.
+> Total de vídeo em produção: 4 arquivos (nucleus, guardian, portal-corridor,
+> holo-hall) — dentro do limite de 4 definido pela missão V4.
+>
+> **V2:** os 4 vídeos abaixo (`sitevideo1-4.mp4`, 16:9 paisagem, tomada
 > única de 40s) foram **completamente substituídos** por uma nova remessa —
 > `video1.6.mp4`, `video 2.6.mp4`, `video 3.6.mp4`, `video 4.6.mp4` — em
 > **9:16 retrato** (720×1280, 24fps, ~6s cada), mesma narrativa e mesmo

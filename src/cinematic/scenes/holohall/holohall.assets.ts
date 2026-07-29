@@ -10,7 +10,7 @@ export function getHoloHallFramePath(index: number): string {
 export const HOLOHALL_ASSETS: SceneAssets = {
   id: 'holo-hall',
   frames: Array.from({ length: HOLOHALL_FRAME_COUNT }, (_, i) => getHoloHallFramePath(i)),
-  preloadPriority: 4,
+  preloadPriority: 3,
 };
 
 /**

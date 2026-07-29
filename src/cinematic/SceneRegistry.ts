@@ -5,18 +5,17 @@ import type { SceneFactory } from './types';
  * scene means adding one line here (plus one entry in `timeline.config.ts`)
  * — nothing else in the engine changes.
  *
- * `nucleus`/`portal`/`ecosystem-entry`/`holo-hall` are frame-sequence
- * scenes (real cinematic footage) — cheap to register, no Three.js
- * involved. `guardian`, `fusion-ai` and `return` pull in Three.js, so
- * they're the ones dynamically imported: that's what keeps the ~500KB
- * library out of the app's main, eagerly-parsed bundle.
+ * `nucleus`/`portal-corridor`/`holo-hall` are frame-sequence scenes (real
+ * cinematic footage) — cheap to register, no Three.js involved. `guardian`,
+ * `fusion-ai` and `return` pull in Three.js, so they're the ones
+ * dynamically imported: that's what keeps the ~500KB library out of the
+ * app's main, eagerly-parsed bundle.
  */
 export const SCENE_REGISTRY: Record<string, SceneFactory> = {
   nucleus: () => import('./scenes/nucleus/NucleusScene').then((m) => m.createNucleusScene()),
   guardian: () => import('./scenes/guardian/GuardianScene').then((m) => m.createGuardianScene()),
-  portal: () => import('./scenes/portal/PortalScene').then((m) => m.createPortalScene()),
-  'ecosystem-entry': () =>
-    import('./scenes/ecosystementry/EcosystemEntryScene').then((m) => m.createEcosystemEntryScene()),
+  'portal-corridor': () =>
+    import('./scenes/portalcorridor/PortalCorridorScene').then((m) => m.createPortalCorridorScene()),
   'holo-hall': () => import('./scenes/holohall/HoloHallScene').then((m) => m.createHoloHallScene()),
   'fusion-ai': () =>
     import('./scenes/fusionai/FusionAiScene').then((m) => m.createFusionAiScene()),
