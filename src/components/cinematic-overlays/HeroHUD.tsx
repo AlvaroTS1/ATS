@@ -36,18 +36,31 @@ const HeroHUD: React.FC = () => {
       style={{ pointerEvents: visible ? 'auto' : 'none' }}
     >
       <div
-        className={cn(
-          'relative w-full max-w-[360px] md:max-w-md overflow-hidden rounded-2xl border backdrop-blur-md px-6 py-7 md:px-8 md:py-8',
-          visible ? 'animate-materialize' : dormant,
-        )}
-        style={{
-          ...(visible ? materializeDelay(0) : {}),
-          backgroundColor: 'rgba(7, 11, 20, 0.6)',
-          borderColor: 'rgba(41, 171, 226, 0.35)',
-          boxShadow:
-            '0 0 0 1px rgba(41, 171, 226, 0.12), 0 20px 60px -20px rgba(41, 171, 226, 0.3), inset 0 0 30px rgba(41, 171, 226, 0.06)',
-        }}
+        className={cn('relative w-full max-w-[360px] md:max-w-md', visible ? 'animate-materialize' : dormant)}
+        style={visible ? materializeDelay(0) : undefined}
       >
+        {/*
+          The tether: one hair-thin line rising toward the structure above
+          (`HoloWall`), so the panel reads as PROJECTED BY this place rather
+          than floating over it. Sits outside the panel because the panel
+          clips its own overflow, and inside the materialize wrapper so it
+          is born with the panel rather than after it.
+        */}
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute left-1/2 bottom-full h-14 w-px -translate-x-1/2"
+          style={{ background: 'linear-gradient(to top, rgba(41,171,226,0.4), transparent)' }}
+        />
+
+        <div
+          className="relative overflow-hidden rounded-2xl border backdrop-blur-md px-6 py-7 md:px-8 md:py-8"
+          style={{
+            backgroundColor: 'rgba(7, 11, 20, 0.6)',
+            borderColor: 'rgba(41, 171, 226, 0.35)',
+            boxShadow:
+              '0 0 0 1px rgba(41, 171, 226, 0.12), 0 20px 60px -20px rgba(41, 171, 226, 0.3), inset 0 0 30px rgba(41, 171, 226, 0.06)',
+          }}
+        >
         {(['top-0 left-0 border-t border-l', 'top-0 right-0 border-t border-r', 'bottom-0 left-0 border-b border-l', 'bottom-0 right-0 border-b border-r'] as const).map(
           (pos) => (
             <span key={pos} className={cn('absolute h-3 w-3 md:h-4 md:w-4 border-neon-cyan/60', pos)} />
@@ -110,6 +123,7 @@ const HeroHUD: React.FC = () => {
               <div className="text-[9px] md:text-[10px] text-gray-500 mt-0.5 leading-tight">{s.label}</div>
             </div>
           ))}
+        </div>
         </div>
       </div>
     </div>

@@ -1,10 +1,10 @@
 import * as THREE from 'three';
 import { LoopingVideoTexture } from './LoopingVideoTexture';
-import { easeInOutCubic } from './easing';
+import { sampleKeyframes, type Keyframe } from './keyframes';
 
 const VIDEO_PATH = '/cinematic/guardian/guardian.mp4';
 
-interface GuardianPose {
+interface GuardianPose extends Record<string, number> {
   opacity: number;
   scale: number;
   x: number;
@@ -14,42 +14,35 @@ interface GuardianPose {
 /**
  * Hand-authored curve over GLOBAL pin progress (0-1 of the whole journey,
  * not one scene's `localProgress`) — the Guardian doesn't belong to a
- * scene, he belongs to the universe. Absent while the core is still
- * forming, rises to full presence as it wakes, recedes to a quiet corner
- * presence (never gone) through the middle of the journey, returns to
- * center as everything collapses home, then settles low-but-visible so
- * the Hero HUD (V5.1 Fase C) has room without him disappearing.
- * `x`/`y` are in Three.js scene units (plane-local); `scale` multiplies
- * the plane's base size.
+ * scene, he belongs to the universe. `x`/`y` are Three.js scene units;
+ * `scale` multiplies the plane's base size.
+ *
+ * V6-D: the old curve ended at opacity 0.18 / scale 0.3, pushed off to a
+ * corner — he shrank and faded away at the exact moment the user arrived.
+ * That is the same departure grammar removed from the `return` scene, and
+ * it contradicts what he is: the host of this place. Now he arrives,
+ * establishes, and STAYS.
+ *
+ * Final composition is vertical and identical on every screen: the
+ * Guardian occupies the upper frame, the Hero HUD sits below him, the
+ * wall (`HoloWall`) is behind them both. Vertical stacking is the only
+ * arrangement that survives a 375px-wide phone, and mobile is the
+ * baseline here — so desktop simply gets the same shot, wider.
  */
-const KEYFRAMES: Array<GuardianPose & { t: number }> = [
+const POSE_CURVE: ReadonlyArray<Keyframe<GuardianPose>> = [
   { t: 0.0, opacity: 0, scale: 0.82, x: 0, y: 0 },
   { t: 0.12, opacity: 0, scale: 0.82, x: 0, y: 0 },
+  // The core pulses and he wakes with it — full presence, centred.
   { t: 0.3, opacity: 1, scale: 1, x: 0, y: 0 },
+  // Travelling the corridor: he steps back and accompanies, never absent.
   { t: 0.6, opacity: 0.3, scale: 0.42, x: 1.05, y: -0.7 },
-  { t: 0.85, opacity: 0.55, scale: 0.68, x: 0, y: 0 },
-  { t: 1.0, opacity: 0.18, scale: 0.3, x: 1.05, y: -0.7 },
+  // Arrival at the Hall: he returns to the frame and settles.
+  { t: 0.85, opacity: 0.62, scale: 0.7, x: 0, y: 0.3 },
+  // And stays. Lifted into the upper frame so the HUD has the lower third,
+  // scaled so the top edge stops short of the frame border (see the
+  // frustum note below) — present, not looming.
+  { t: 1.0, opacity: 0.72, scale: 0.58, x: 0, y: 0.62 },
 ];
-
-function computePose(progress: number): GuardianPose {
-  const t = Math.min(1, Math.max(0, progress));
-  for (let i = 0; i < KEYFRAMES.length - 1; i++) {
-    const a = KEYFRAMES[i];
-    const b = KEYFRAMES[i + 1];
-    if (t >= a.t && t <= b.t) {
-      const local = (t - a.t) / (b.t - a.t || 1);
-      const eased = easeInOutCubic(local);
-      return {
-        opacity: a.opacity + (b.opacity - a.opacity) * eased,
-        scale: a.scale + (b.scale - a.scale) * eased,
-        x: a.x + (b.x - a.x) * eased,
-        y: a.y + (b.y - a.y) * eased,
-      };
-    }
-  }
-  const last = KEYFRAMES[KEYFRAMES.length - 1];
-  return { opacity: last.opacity, scale: last.scale, x: last.x, y: last.y };
-}
 
 /**
  * The Guardian as a persistent inhabitant of the universe, not a scene he
@@ -74,8 +67,15 @@ export class GuardianPresence {
   private fog: THREE.Fog | null = null;
   private rafId: number | null = null;
   private startTime = 0;
-  private targetProgress = 0;
-  private smoothedProgress = 0;
+  /**
+   * Written by `setProgress`, read by the rAF loop. Not smoothed here: the
+   * host already eases global progress (`lib/scrollEasing.ts`, V6-A), and
+   * a second lerp on top of it would give the Guardian alone an extra lag
+   * the rest of the world doesn't have — which reads as him dragging
+   * behind the shot, not as weight.
+   */
+  private progress = 0;
+  private readonly pose: GuardianPose = { opacity: 0, scale: 0.82, x: 0, y: 0 };
   private onVisibilityChange = (): void => {
     if (document.hidden) this.stopLoop();
     else this.startLoop();
@@ -122,9 +122,9 @@ export class GuardianPresence {
     this.renderer.setSize(cssWidth, cssHeight, false);
   }
 
-  /** Called on every scroll tick with the pin's global progress (0-1). */
+  /** Called on every scroll tick with the pin's global progress (0-1), already eased by the host. */
   setProgress(progress: number): void {
-    this.targetProgress = progress;
+    this.progress = progress;
   }
 
   private startLoop(): void {
@@ -145,11 +145,8 @@ export class GuardianPresence {
   private draw(_timeSeconds: number): void {
     if (!this.renderer || !this.scene || !this.camera) return;
 
-    // Lerp toward the scroll-derived target, never snap — same principle
-    // as AmbientLayer's brightness/tint smoothing, so his pose reads as
-    // settling into place, not teleporting between keyframes.
-    this.smoothedProgress += (this.targetProgress - this.smoothedProgress) * 0.07;
-    const pose = computePose(this.smoothedProgress);
+    const pose = this.pose;
+    sampleKeyframes(POSE_CURVE, this.progress, pose);
 
     if (this.plane) {
       this.plane.position.set(pose.x, pose.y, 0);
