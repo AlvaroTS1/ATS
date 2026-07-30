@@ -13,12 +13,20 @@ export class LoopingVideoTexture {
   private video: HTMLVideoElement | null = null;
   private texture: THREE.VideoTexture | null = null;
 
-  /** Creates the hidden video, starts its native loop, and resolves once a texture is safe to sample. */
-  async load(url: string): Promise<THREE.VideoTexture> {
+  /**
+   * Creates the hidden video, starts playback, and resolves once a texture
+   * is safe to sample.
+   *
+   * `loop: false` is for one-shot beats — a clip that fires at a scroll
+   * threshold and plays out on the real clock rather than repeating. It
+   * still autoplays here; the caller pauses and rewinds it until the
+   * moment it is wanted (see `restart`).
+   */
+  async load(url: string, options?: { loop?: boolean }): Promise<THREE.VideoTexture> {
     const video = document.createElement('video');
     video.src = url;
     video.muted = true;
-    video.loop = true;
+    video.loop = options?.loop ?? true;
     video.playsInline = true;
     video.preload = 'auto';
     this.video = video;
@@ -40,6 +48,23 @@ export class LoopingVideoTexture {
     texture.generateMipmaps = false;
     this.texture = texture;
     return texture;
+  }
+
+  /**
+   * The underlying element, for callers that need to read the clip itself —
+   * `sampleAmbient` on a beat's own frames, or `ended`/`currentTime` to
+   * drive a consequence off the footage instead of off invented timing.
+   */
+  get element(): HTMLVideoElement | null {
+    return this.video;
+  }
+
+  /** Rewinds to the first frame and plays — a one-shot beat firing. */
+  restart(): void {
+    const video = this.video;
+    if (!video) return;
+    video.currentTime = 0;
+    video.play().catch(() => {});
   }
 
   /** Pauses decoding — call when the scene scrolls out of view for a while (device tier / visibility gating). */

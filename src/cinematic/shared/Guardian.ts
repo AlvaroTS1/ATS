@@ -1,8 +1,44 @@
 import * as THREE from 'three';
 import { LoopingVideoTexture } from './LoopingVideoTexture';
 import { sampleKeyframes, type Keyframe } from './keyframes';
+import { sampleAmbient, type AmbientSample } from './sampleAmbient';
 
 const GUARDIAN_VIDEO = '/cinematic/guardian/guardian.mp4';
+const BEAM_VIDEO = '/cinematic/guardian/beam.mp4';
+
+/**
+ * Global progress at which the beam fires.
+ *
+ * 0.6294 is where `holo-hall`'s interactive panels finish dissolving —
+ * measured by sweeping the real `Timeline` against
+ * `HOLOHALL_PANELS_HIDE_AT`, not estimated. The Hall takes the frame at
+ * 0.6501, so the blowout lands exactly on the handoff between regions.
+ *
+ * That window is 0.02 of the whole journey, roughly 150px of scroll, which
+ * is why the clip CANNOT be scrubbed by scroll: nobody would ever see it.
+ * It fires once and plays out on the real clock.
+ */
+const BEAM_FIRES_AT = 0.6294;
+/** Scrolling back this far below the trigger re-arms it. Hysteresis, so it can't strobe. */
+const BEAM_REARM_BELOW = 0.56;
+
+/**
+ * The flash is not a timed effect — it is the light he actually emits,
+ * measured. `sampleAmbient` reads the beam clip's own mean luminance every
+ * few frames and that drives the overlay, so the two can never drift and
+ * changing the clip changes the flash for free.
+ *
+ * The knee is set from the clip as shipped: it sits at luma 27-58 (0.11-0.23)
+ * for the first four seconds while he turns and the emblem charges, then
+ * blows out to 239 (0.94). Mapping 0.30 -> 0.90 keeps the whole charging
+ * phase at zero flash and lets only the release actually fill the screen.
+ */
+const FLASH_FROM = 0.3;
+const FLASH_TO = 0.9;
+/** How fast the flash falls once the clip is spent. */
+const FLASH_DECAY_PER_SECOND = 1.6;
+/** Sampling every Nth rendered frame — the ramp lasts ~1s, so this is plenty. */
+const FLASH_SAMPLE_INTERVAL = 4;
 
 /** 9:16 source. */
 const SOURCE_ASPECT = 1280 / 720;
@@ -138,6 +174,25 @@ export class Guardian {
   private material: THREE.ShaderMaterial | null = null;
   private mesh: THREE.Mesh | null = null;
 
+  private beam: LoopingVideoTexture | null = null;
+  private beamTexture: THREE.VideoTexture | null = null;
+  private idleTexture: THREE.VideoTexture | null = null;
+  private flashGeometry: THREE.PlaneGeometry | null = null;
+  private flashMaterial: THREE.MeshBasicMaterial | null = null;
+  private flash: THREE.Mesh | null = null;
+
+  /**
+   * IDLE -> FIRING (clip playing, flash rising off its measured luminance)
+   * -> DECAYING (clip spent, flash falling; the map swaps back to idle
+   * UNDER COVER of the white, so the swap is never seen) -> IDLE.
+   */
+  private beamState: 'idle' | 'firing' | 'decaying' = 'idle';
+  private beamArmed = true;
+  private flashAlpha = 0;
+  private lastFrameTime = 0;
+  private sampleCounter = 0;
+  private readonly beamSample: AmbientSample = { brightness: 0, r: 0, g: 0, b: 0 };
+
   private rafId: number | null = null;
   private frameParity = 0;
   private skipAlternateFrames = false;
@@ -177,6 +232,7 @@ export class Guardian {
     this.video = new LoopingVideoTexture();
     const texture = await this.video.load(GUARDIAN_VIDEO);
     if (!this.scene) return; // unmounted while the video was loading
+    this.idleTexture = texture;
 
     this.geometry = new THREE.PlaneGeometry(PLANE_WIDTH, PLANE_WIDTH * SOURCE_ASPECT);
     this.material = new THREE.ShaderMaterial({
@@ -201,8 +257,44 @@ export class Guardian {
     this.mesh = new THREE.Mesh(this.geometry, this.material);
     this.scene.add(this.mesh);
 
+    // The flash: a white quad just in front of the camera, sized to the
+    // frustum on every resize. It lives in this scene rather than in the
+    // DOM because it belongs to the light he releases, and because at
+    // z-[21] it already covers every footage canvas beneath it while
+    // staying under the HUD — which is the point, since the interface is
+    // what the light makes readable.
+    this.flashGeometry = new THREE.PlaneGeometry(1, 1);
+    this.flashMaterial = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0,
+      depthWrite: false,
+    });
+    this.flash = new THREE.Mesh(this.flashGeometry, this.flashMaterial);
+    this.flash.position.set(0, 0, 5);
+    this.flash.visible = false;
+    this.scene.add(this.flash);
+    this.sizeFlashToFrustum();
+
+    // Loaded after the idle clip so the thing needed first is never behind
+    // the thing needed at 63% of the journey. Paused at frame 0 until fired.
+    this.beam = new LoopingVideoTexture();
+    this.beamTexture = await this.beam.load(BEAM_VIDEO, { loop: false });
+    if (!this.scene) return;
+    this.beam.pause();
+    const beamEl = this.beam.element;
+    if (beamEl) beamEl.currentTime = 0;
+
     document.addEventListener('visibilitychange', this.onVisibilityChange);
     this.startLoop();
+  }
+
+  /** The flash quad has to exactly cover the frustum at its own depth. */
+  private sizeFlashToFrustum(): void {
+    if (!this.flash || !this.camera) return;
+    const distance = this.camera.position.z - this.flash.position.z;
+    const halfHeight = Math.tan((this.camera.fov * Math.PI) / 360) * distance;
+    this.flash.scale.set(halfHeight * this.camera.aspect * 2, halfHeight * 2, 1);
   }
 
   resize(cssWidth: number, cssHeight: number): void {
@@ -210,6 +302,7 @@ export class Guardian {
     this.camera.aspect = cssWidth / cssHeight;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(cssWidth, cssHeight, false);
+    this.sizeFlashToFrustum();
   }
 
   /** Global journey progress (0-1), already eased by the host. */
@@ -231,11 +324,72 @@ export class Guardian {
     this.rafId = null;
   }
 
+  /**
+   * He does not launch the site. He lights the hall, and the light is what
+   * makes the interface readable — the distinction matters, because a beam
+   * that ENDS the cinematic would rebuild the "intro is over, now the site
+   * starts" seam that V5.1 through V7 existed to destroy. Same drama,
+   * opposite meaning: this reveals a region, it doesn't close one.
+   */
+  private stepBeam(deltaSeconds: number): void {
+    if (!this.material || !this.flashMaterial || !this.beam) return;
+
+    if (this.beamState === 'idle') {
+      if (this.progress < BEAM_REARM_BELOW) this.beamArmed = true;
+      if (this.beamArmed && this.progress >= BEAM_FIRES_AT) {
+        this.beamArmed = false;
+        this.beamState = 'firing';
+        this.flashAlpha = 0;
+        if (this.beamTexture) this.material.uniforms.uMap.value = this.beamTexture;
+        this.beam.restart();
+      }
+      return;
+    }
+
+    if (this.beamState === 'firing') {
+      const el = this.beam.element;
+      // The flash follows the clip's OWN luminance, sampled — not a curve
+      // invented to match it. Sampled every few frames because the ramp
+      // lasts about a second, so 15Hz is already more than the eye needs.
+      this.sampleCounter = (this.sampleCounter + 1) % FLASH_SAMPLE_INTERVAL;
+      if (el && el.readyState >= 2 && this.sampleCounter === 0) {
+        sampleAmbient(el, this.beamSample);
+      }
+      const target = THREE.MathUtils.smoothstep(this.beamSample.brightness, FLASH_FROM, FLASH_TO);
+      // Rises freely, never falls while firing — a flash that flickered
+      // back down mid-release would read as a dropped frame.
+      this.flashAlpha = Math.max(this.flashAlpha, target);
+
+      if (!el || el.ended || (el.duration > 0 && el.currentTime >= el.duration - 0.05)) {
+        this.beamState = 'decaying';
+        // Swapped while the screen is at its whitest, so the cut back to
+        // the idle loop happens inside the light and is never visible.
+        if (this.idleTexture) this.material.uniforms.uMap.value = this.idleTexture;
+        this.beam.pause();
+        if (el) el.currentTime = 0;
+      }
+    } else if (this.beamState === 'decaying') {
+      this.flashAlpha -= FLASH_DECAY_PER_SECOND * deltaSeconds;
+      if (this.flashAlpha <= 0) {
+        this.flashAlpha = 0;
+        this.beamState = 'idle';
+      }
+    }
+
+    this.flashMaterial.opacity = this.flashAlpha;
+    if (this.flash) this.flash.visible = this.flashAlpha > 0.001;
+  }
+
   private draw(): void {
     if (!this.renderer || !this.scene || !this.camera || !this.mesh || !this.material) return;
 
     this.frameParity ^= 1;
     if (this.skipAlternateFrames && this.frameParity === 1) return;
+
+    const now = performance.now();
+    const deltaSeconds = this.lastFrameTime === 0 ? 0 : Math.min(0.1, (now - this.lastFrameTime) / 1000);
+    this.lastFrameTime = now;
+    this.stepBeam(deltaSeconds);
 
     const pose = this.pose;
     sampleKeyframes(POSE_CURVE, this.progress, pose);
@@ -264,6 +418,9 @@ export class Guardian {
     this.geometry?.dispose();
     this.material?.dispose();
     this.video?.dispose();
+    this.beam?.dispose();
+    this.flashGeometry?.dispose();
+    this.flashMaterial?.dispose();
     // forceContextLoss() frees the WebGL context immediately instead of
     // waiting on garbage collection — same as every other renderer here.
     this.renderer?.forceContextLoss();
@@ -276,5 +433,15 @@ export class Guardian {
     this.geometry = null;
     this.material = null;
     this.mesh = null;
+    this.beam = null;
+    this.beamTexture = null;
+    this.idleTexture = null;
+    this.flashGeometry = null;
+    this.flashMaterial = null;
+    this.flash = null;
+    this.beamState = 'idle';
+    this.beamArmed = true;
+    this.flashAlpha = 0;
+    this.lastFrameTime = 0;
   }
 }

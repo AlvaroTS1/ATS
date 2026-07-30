@@ -28,7 +28,10 @@ export interface AmbientSample {
  * Writes into a caller-owned object so the per-frame path allocates
  * nothing, matching the discipline every animator here follows.
  */
-export function sampleAmbient(image: HTMLImageElement, out: AmbientSample): void {
+export function sampleAmbient(
+  image: HTMLImageElement | HTMLVideoElement,
+  out: AmbientSample,
+): void {
   if (!sampleCanvas) sampleCanvas = document.createElement('canvas');
   sampleCanvas.width = SAMPLE_SIZE;
   sampleCanvas.height = SAMPLE_SIZE;
