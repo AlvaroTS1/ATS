@@ -8,6 +8,7 @@ import { SCENE_ASSETS } from '../cinematic/sceneAssets';
 import { SCENE_DURATIONS } from '../cinematic/timeline.config';
 import { getHoloHallFramePath, HOLOHALL_FRAME_COUNT } from '../cinematic/scenes/holohall/holohall.assets';
 import { AmbientLayer } from '../cinematic/shared/AmbientLayer';
+import type { Guardian } from '../cinematic/shared/Guardian';
 import { cinematicEvents } from '../cinematic/EventBus';
 import { intToRgb } from '../cinematic/shared/colorLerp';
 import { getDeviceTier } from '../lib/deviceTier';
@@ -42,9 +43,11 @@ const CinematicExperience: React.FC = () => {
   const holoHallCanvasRef = useRef<HTMLCanvasElement>(null);
   const hallCanvasRef = useRef<HTMLCanvasElement>(null);
   const ambientCanvasRef = useRef<HTMLCanvasElement>(null);
+  const guardianCanvasRef = useRef<HTMLCanvasElement>(null);
   const cueRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<SceneEngine | null>(null);
   const ambientLayerRef = useRef<AmbientLayer | null>(null);
+  const guardianRef = useRef<Guardian | null>(null);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
   useEffect(() => {
@@ -64,6 +67,7 @@ const CinematicExperience: React.FC = () => {
     const holoHallCanvas = holoHallCanvasRef.current;
     const hallCanvas = hallCanvasRef.current;
     const ambientCanvas = ambientCanvasRef.current;
+    const guardianCanvas = guardianCanvasRef.current;
     if (
       !wrapper ||
       !pin ||
@@ -71,7 +75,8 @@ const CinematicExperience: React.FC = () => {
       !portalCorridorCanvas ||
       !holoHallCanvas ||
       !hallCanvas ||
-      !ambientCanvas
+      !ambientCanvas ||
+      !guardianCanvas
     )
       return;
 
@@ -102,16 +107,34 @@ const CinematicExperience: React.FC = () => {
     let smoothedProgress = 0;
     let easeRafId: number | null = null;
 
+    // The Guardian. Dynamically imported so Three.js never lands in the
+    // eager main bundle — CinematicExperience isn't lazy-loaded, so a
+    // static import here would drag the ~500KB library into first paint
+    // (a bug this migration hit twice; the bundle is checked every build).
+    import('../cinematic/shared/Guardian').then(({ Guardian }) => {
+      if (cancelled) return;
+      const tier = getDeviceTier();
+      const guardian = new Guardian();
+      guardianRef.current = guardian;
+      void guardian.mount(guardianCanvas, tier === 'high' ? 2 : 1.5, tier).then(() => {
+        if (cancelled) return;
+        guardian.resize(pin.clientWidth, pin.clientHeight);
+        guardian.setProgress(smoothedProgress);
+      });
+    });
+
     /** Sizing is a resize concern, not a per-frame one — kept off the eased loop. */
     const resizeWorld = () => {
       engineRef.current?.resizeAll(pin.clientWidth, pin.clientHeight);
       ambientLayerRef.current?.resize(pin.clientWidth, pin.clientHeight);
+      guardianRef.current?.resize(pin.clientWidth, pin.clientHeight);
     };
 
     /** Everything that lives on scroll progress reads the SMOOTHED value. */
     const pushWorldProgress = (p: number) => {
       engineRef.current?.tick(p);
       ambientLayerRef.current?.setScrollProgress(p);
+      guardianRef.current?.setProgress(p);
       if (cueRef.current) {
         cueRef.current.style.opacity = p < 0.04 ? String(1 - p / 0.04) : '0';
       }
@@ -198,6 +221,8 @@ const CinematicExperience: React.FC = () => {
       engineRef.current = null;
       ambientLayerRef.current?.unmount();
       ambientLayerRef.current = null;
+      guardianRef.current?.unmount();
+      guardianRef.current = null;
       unsubscribeProductStage();
     };
   }, [prefersReducedMotion]);
@@ -238,23 +263,28 @@ const CinematicExperience: React.FC = () => {
         <canvas ref={nucleusCanvasRef} className="absolute inset-0 z-20 h-full w-full" />
 
         {/*
-          V8: the Sede layer is gone, and z-[21] is deliberately left empty
-          for the Guardian to return into.
+          The Guardian, above the footage he inhabits (see Guardian.ts).
+          A persistent layer rather than a scene, driven by global journey
+          progress — he doesn't belong to one region, he belongs to the
+          whole trip.
 
-          It held two things, and the audit killed both. The wireframe
-          monument competed with the footage instead of adding to it —
-          `holo-hall` and the Hall footage already ARE monumental
-          architecture with integrated holograms, so drawing a second,
-          line-art building over photoreal architecture put two buildings
-          in one frame. And the Guardian was a rectangle: measured against
-          this stack's near-black (luma ~7), his plate's borders sat at luma
-          45-72, a 6-10x step at the edge, on a frame that crops his skull
-          and shoulders so no feather could hide it, over a background too
-          bright to key without eating his own armour.
+          V8 rebuilt him from scratch against a source shot to spec: a true
+          black void, so a luma matte separates him with no mask painting,
+          and an edge feather forces alpha to zero before the plate's own
+          border can ever reach the screen. His predecessor was retired
+          because none of that was possible — a cropped bust on a mid-tone
+          teal background, borders 6-10x brighter than this stack's
+          near-black, armour darker than the background it sat on.
 
-          The headquarters is the FOOTAGE. The Guardian comes back only
-          when he can be an inhabitant of it rather than a plate over it.
+          The wireframe monument that shared this layer is gone for good:
+          the footage already IS monumental architecture with integrated
+          holograms, and a second line-art building over photoreal
+          architecture just put two buildings in one frame.
         */}
+        <canvas
+          ref={guardianCanvasRef}
+          className="absolute inset-0 z-[21] h-full w-full pointer-events-none"
+        />
 
         {/* Always breathing, independent of scroll — see AmbientLayer.ts */}
         <canvas ref={ambientCanvasRef} className="absolute inset-0 z-[25] h-full w-full pointer-events-none" />
