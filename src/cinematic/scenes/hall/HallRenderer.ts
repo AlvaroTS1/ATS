@@ -7,9 +7,9 @@ import type { HallState } from './HallAnimator';
  * Renders the arrival: scattered energy organizes into the volume of a
  * room while the camera moves in and the light establishes. Deliberately
  * restrained per V6 art direction — the particles describe the space, and
- * a single soft ambient glow sits it in place. No second light source, no
- * extra sprite: the Sede (`shared/Sede.ts`) — the Guardian and his
- * architecture — is the thing that gets to be looked at here.
+ * a single soft ambient glow sits it in place. No second light source and
+ * no extra sprite: restraint here is what lets the footage's own
+ * architecture be the thing that gets looked at.
  *
  * Owns every Three.js resource it creates and disposes all of them on
  * unmount.

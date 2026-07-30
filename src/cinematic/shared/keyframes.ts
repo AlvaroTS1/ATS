@@ -1,11 +1,16 @@
 import { easeInOutCubic } from './easing';
 
 /**
- * Hand-authored pose curves over GLOBAL journey progress — the pattern
- * persistent layers use instead of belonging to a Timeline range
- * (`Sede`). Kept generic and zero-allocation:
- * writes into a caller-owned `out` object, same discipline as every
- * Animator in `scenes/`.
+ * Hand-authored pose curves over GLOBAL journey progress — the pattern a
+ * persistent layer uses instead of belonging to a Timeline range. Kept
+ * generic and zero-allocation: writes into a caller-owned `out` object,
+ * same discipline as every Animator in `scenes/`.
+ *
+ * Currently unused: its one consumer was the Sede layer, retired in V8
+ * when the audit found its wireframe monument competing with the
+ * footage's own architecture. Kept because the Guardian returns as a
+ * persistent layer, and a pose curve over global progress is still the
+ * right shape for him.
  */
 export type Keyframe<T> = T & { t: number };
 

@@ -22,11 +22,12 @@ import type { SceneDurationConfig } from './types';
  * are timed to finish dissolving just as this overlap begins, so they
  * never appear mid-cross-fade.
  *
- * V5.1: the Guardian is no longer a scene here — he lives in `Sede`
- * (`shared/Sede.ts`), mounted once alongside `AmbientLayer`
- * and driven by this Timeline's GLOBAL progress on a hand-authored pose
- * curve, not a range of his own. He doesn't belong to one scene; he
- * belongs to the whole journey.
+ * The Guardian is not a scene here, and never becomes one: he is a
+ * persistent layer driven by this Timeline's GLOBAL progress, not by a
+ * range of his own. He doesn't belong to one scene; he belongs to the
+ * whole journey. (V8 retired the layer that carried him until a source
+ * exists that can be composited into the space instead of laid over it —
+ * the distance below stays his.)
  *
  * Distances below are the MOBILE-FIRST baseline (V4: "projete primeiro
  * para celulares, depois expanda para desktop" — most traffic is mobile,
@@ -40,8 +41,8 @@ import type { SceneDurationConfig } from './types';
  * to the real "Fusion AI" roadmap entry in `data/products.ts`. That
  * product keeps existing in `RoadmapSection`; it just doesn't get an
  * unexplained cinematic beat. Its distance moved into the final stretch,
- * which needs the room for the Guardian's persistent presence
- * (`shared/Sede.ts`) and the in-universe Hero HUD landing inside it.
+ * which needs the room for the Guardian's persistent presence and the
+ * in-universe Hero HUD landing inside it.
  *
  * V6: `return` became `hall`. The old scene was choreographed as a
  * curtain call — camera pulling back, energy collapsing to a point, light
@@ -59,8 +60,8 @@ import type { SceneDurationConfig } from './types';
 export const SCENE_DURATIONS: SceneDurationConfig[] = [
   { id: 'nucleus', distance: 750, overlap: 0.12 },
   // Absorbed the old discrete `guardian` scene's distance (825px) — the
-  // Guardian's "awakening" now happens on the Sede's own pose
-  // curve during this stretch, not a separate scene mount.
+  // Guardian's "awakening" belongs to a persistent layer over global
+  // progress during this stretch, not to a separate scene mount.
   { id: 'portal-corridor', distance: 2250, overlap: 0.05 },
   { id: 'holo-hall', distance: 750, overlap: 0.12 },
   // The destination, and deliberately the LONGEST region of the journey:
