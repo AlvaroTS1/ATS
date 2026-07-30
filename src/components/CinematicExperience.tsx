@@ -301,6 +301,14 @@ const CinematicExperience: React.FC = () => {
         className="fixed inset-0 z-[60] bg-white pointer-events-none"
         style={{ opacity: 0, visibility: 'hidden' }}
       />
+
+      {/*
+        One grain surface over the WHOLE document — footage, interface,
+        the released light and the page below it. Outside the pin for the
+        same reason the flash is: inside, it stopped at the pin's edge and
+        left a texture seam exactly where the handover happens.
+      */}
+      <FilmGrain />
       <div
         ref={pinRef}
         className="absolute inset-x-0 h-screen w-full overflow-hidden flex items-center justify-center pointer-events-none"
@@ -348,13 +356,30 @@ const CinematicExperience: React.FC = () => {
             just enough to keep every scene reading like one continuous shot. */}
         <div className="absolute inset-0 z-[26] pointer-events-none [background:radial-gradient(ellipse_at_center,transparent_55%,rgba(0,0,0,0.4)_100%)]" />
 
+        {/*
+          The bottom of the frame dissolves into the page's own colour
+          before the pin's edge ever arrives.
+
+          `overflow: hidden` clips the footage dead straight at the pin's
+          bottom, and the footage is a LIT corridor — so however well the
+          base colours matched (both are rgb(3,7,18)), a bright plate was
+          butting against flat colour along a razor-straight line. That
+          line was the last thing announcing "the video ended here".
+          Fading to exactly the page colour means the clip happens where
+          both sides are already identical, and there is nothing left for
+          the edge to reveal.
+
+          Sits above every canvas but BELOW the interface, so it softens
+          the footage without dimming the Hero panel that floats over it.
+        */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-x-0 bottom-0 z-30 h-56 pointer-events-none"
+          style={{ background: 'linear-gradient(to bottom, transparent, rgb(3, 7, 18))' }}
+        />
+
         <HologramConsole />
         <HeroHUD />
-
-        {/* Above EVERYTHING, footage and interface alike — that is the whole
-            point: one shared surface is what stops the eye reading two
-            layers. See FilmGrain.tsx. */}
-        <FilmGrain />
 
         <div
           ref={cueRef}

@@ -65,7 +65,18 @@ const FilmGrain: React.FC = () => {
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none absolute inset-0 z-50 animate-film-grain"
+      // FIXED and document-wide, not confined to the pin.
+      //
+      // Inside the pin the grain stopped dead at the pin's bottom edge, so
+      // the footage was grained and the page below it was clean — a texture
+      // seam on exactly the line where the cinematic hands over, which is
+      // the last place that can afford one. The whole argument for grain
+      // (V7-B) is that one surface covering two things stops the eye
+      // separating them; that argument does not end at the pin.
+      //
+      // Above the flash layer on purpose: the released light gets grained
+      // too, so even the white is part of the same surface.
+      className="pointer-events-none fixed inset-0 z-[70] animate-film-grain"
       style={{
         backgroundImage: `url(${tile})`,
         backgroundRepeat: 'repeat',
