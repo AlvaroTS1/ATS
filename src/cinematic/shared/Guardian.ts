@@ -3,6 +3,7 @@ import { LoopingVideoTexture } from './LoopingVideoTexture';
 import { sampleKeyframes, type Keyframe } from './keyframes';
 import { sampleAmbient, type AmbientSample } from './sampleAmbient';
 import { AssetManager } from '../AssetManager';
+import { cinematicEvents } from '../EventBus';
 import { pickFrameIndex } from './FrameSequenceAnimator';
 
 const GUARDIAN_VIDEO = '/cinematic/guardian/guardian.mp4';
@@ -178,11 +179,9 @@ export class Guardian {
   private beamTexture: THREE.Texture | null = null;
   private idleTexture: THREE.VideoTexture | null = null;
   private beamFrameIndex = -1;
-  private flashGeometry: THREE.PlaneGeometry | null = null;
-  private flashMaterial: THREE.MeshBasicMaterial | null = null;
-  private flash: THREE.Mesh | null = null;
 
   private flashAlpha = 0;
+  private lastPublishedFlash = -1;
   private readonly beamSample: AmbientSample = { brightness: 0, r: 0, g: 0, b: 0 };
 
   private rafId: number | null = null;
@@ -249,25 +248,6 @@ export class Guardian {
     this.mesh = new THREE.Mesh(this.geometry, this.material);
     this.scene.add(this.mesh);
 
-    // The flash: a white quad just in front of the camera, sized to the
-    // frustum on every resize. It lives in this scene rather than in the
-    // DOM because it belongs to the light he releases, and because at
-    // z-[21] it already covers every footage canvas beneath it while
-    // staying under the HUD — which is the point, since the interface is
-    // what the light makes readable.
-    this.flashGeometry = new THREE.PlaneGeometry(1, 1);
-    this.flashMaterial = new THREE.MeshBasicMaterial({
-      color: 0xffffff,
-      transparent: true,
-      opacity: 0,
-      depthWrite: false,
-    });
-    this.flash = new THREE.Mesh(this.flashGeometry, this.flashMaterial);
-    this.flash.position.set(0, 0, 5);
-    this.flash.visible = false;
-    this.scene.add(this.flash);
-    this.sizeFlashToFrustum();
-
     // One texture reused for every beam frame: the image behind it is
     // swapped as the scroll scrubs, rather than allocating a texture per
     // frame. Streamed in the background because it is only needed in the
@@ -292,20 +272,11 @@ export class Guardian {
     this.startLoop();
   }
 
-  /** The flash quad has to exactly cover the frustum at its own depth. */
-  private sizeFlashToFrustum(): void {
-    if (!this.flash || !this.camera) return;
-    const distance = this.camera.position.z - this.flash.position.z;
-    const halfHeight = Math.tan((this.camera.fov * Math.PI) / 360) * distance;
-    this.flash.scale.set(halfHeight * this.camera.aspect * 2, halfHeight * 2, 1);
-  }
-
   resize(cssWidth: number, cssHeight: number): void {
     if (!this.camera || !this.renderer || cssWidth === 0 || cssHeight === 0) return;
     this.camera.aspect = cssWidth / cssHeight;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(cssWidth, cssHeight, false);
-    this.sizeFlashToFrustum();
   }
 
   /** Global journey progress (0-1), already eased by the host. */
@@ -339,7 +310,7 @@ export class Guardian {
    * back actually go back.
    */
   private stepBeam(): void {
-    if (!this.material || !this.flashMaterial || !this.beamTexture) return;
+    if (!this.material || !this.beamTexture) return;
 
     const beamProgress = (this.progress - BEAM_FROM) / (1 - BEAM_FROM);
     if (beamProgress <= 0) {
@@ -348,8 +319,7 @@ export class Guardian {
       if (this.idleTexture) this.material.uniforms.uMap.value = this.idleTexture;
       this.flashAlpha = 0;
       this.beamFrameIndex = -1;
-      this.flashMaterial.opacity = 0;
-      if (this.flash) this.flash.visible = false;
+      this.publishFlash();
       return;
     }
 
@@ -377,8 +347,24 @@ export class Guardian {
       }
     }
 
-    this.flashMaterial.opacity = this.flashAlpha;
-    if (this.flash) this.flash.visible = this.flashAlpha > 0.001;
+    this.publishFlash();
+  }
+
+  /**
+   * The flash is REPORTED, not drawn here.
+   *
+   * It used to be a quad inside this scene, which meant it lived inside the
+   * pin — so the moment the pin released, the light vanished and the page
+   * slid up underneath it as an ordinary scroll. That gap is the "interval"
+   * the whole cinematic exists to deny. Rendered by the host as a fixed
+   * layer instead, it survives the pin and can fade out over the page,
+   * which is what lets the site emerge FROM the light rather than arrive
+   * after it.
+   */
+  private publishFlash(): void {
+    if (this.flashAlpha === this.lastPublishedFlash) return;
+    this.lastPublishedFlash = this.flashAlpha;
+    cinematicEvents.emit('guardian:flash', { intensity: this.flashAlpha });
   }
 
   private draw(): void {
@@ -417,8 +403,6 @@ export class Guardian {
     this.material?.dispose();
     this.video?.dispose();
     this.beamTexture?.dispose();
-    this.flashGeometry?.dispose();
-    this.flashMaterial?.dispose();
     // forceContextLoss() frees the WebGL context immediately instead of
     // waiting on garbage collection — same as every other renderer here.
     this.renderer?.forceContextLoss();
@@ -434,9 +418,6 @@ export class Guardian {
     this.beamTexture = null;
     this.beamFrameIndex = -1;
     this.idleTexture = null;
-    this.flashGeometry = null;
-    this.flashMaterial = null;
-    this.flash = null;
     this.flashAlpha = 0;
   }
 }

@@ -75,6 +75,18 @@ export interface CinematicEventMap {
     anchorX: number;
     anchorY: number;
   };
+  /**
+   * How bright the Guardian's released light is right now, 0-1, sampled
+   * from the beam frame the scroll has landed on.
+   *
+   * Reported rather than drawn by him because the flash has to OUTLIVE the
+   * pin. Drawn inside his scene it died with the pin, and the page then
+   * slid up underneath as an ordinary scroll — the exact interval this
+   * whole cinematic exists to deny. The host renders it as a fixed layer
+   * and fades it out across the first stretch of the page, so the site
+   * emerges from the light instead of arriving after it.
+   */
+  'guardian:flash': { intensity: number };
   [key: string]: unknown;
 }
 

@@ -26,6 +26,22 @@ const DESKTOP_DISTANCE_SCALE = 4 / 3;
 const MOBILE_BREAKPOINT_PX = 768;
 
 /**
+ * How far past the pinned journey the Guardian's light takes to clear, in
+ * scroll px.
+ *
+ * This is what removes the interval. The flash used to live inside the pin,
+ * so it died the instant the pin released and the first section then slid
+ * up as an ordinary scroll — the seam every version since V5.1 has been
+ * fighting. Held across the boundary instead, the page scrolls into place
+ * WHILE the screen is still white, and the light clears onto a site that is
+ * simply already there. The viewer never sees anything arrive.
+ *
+ * Roughly two thirds of a viewport: long enough to cover the handoff,
+ * short enough that nobody is left staring at white.
+ */
+const FLASH_CLEAR_PX = 620;
+
+/**
  * Host for the whole cinematic Scene Engine. Owns exactly the pin/unpin
  * mechanics (via `pinScrollMath.ts`, unchanged) and the stacked canvases —
  * one per scene, ordered so the earliest scene sits on top and fades away
@@ -45,6 +61,7 @@ const CinematicExperience: React.FC = () => {
   const ambientCanvasRef = useRef<HTMLCanvasElement>(null);
   const guardianCanvasRef = useRef<HTMLCanvasElement>(null);
   const cueRef = useRef<HTMLDivElement>(null);
+  const flashRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<SceneEngine | null>(null);
   const ambientLayerRef = useRef<AmbientLayer | null>(null);
   const guardianRef = useRef<Guardian | null>(null);
@@ -130,11 +147,33 @@ const CinematicExperience: React.FC = () => {
       guardianRef.current?.resize(pin.clientWidth, pin.clientHeight);
     };
 
+    // The Guardian reports how bright his light is; how much of it reaches
+    // the screen also depends on how far past the pin we have scrolled.
+    let flashIntensity = 0;
+    const paintFlash = () => {
+      const el = flashRef.current;
+      if (!el) return;
+      const rect = wrapper.getBoundingClientRect();
+      // How far the viewport has travelled beyond the end of the journey.
+      const overshoot = Math.max(0, window.innerHeight - rect.bottom);
+      const clearing = Math.min(1, overshoot / FLASH_CLEAR_PX);
+      const opacity = flashIntensity * (1 - clearing);
+      el.style.opacity = String(opacity);
+      // Kept out of the compositor entirely when it has nothing to show.
+      el.style.visibility = opacity > 0.002 ? 'visible' : 'hidden';
+    };
+
+    const unsubscribeFlash = cinematicEvents.on('guardian:flash', ({ intensity }) => {
+      flashIntensity = intensity;
+      paintFlash();
+    });
+
     /** Everything that lives on scroll progress reads the SMOOTHED value. */
     const pushWorldProgress = (p: number) => {
       engineRef.current?.tick(p);
       ambientLayerRef.current?.setScrollProgress(p);
       guardianRef.current?.setProgress(p);
+      paintFlash();
       if (cueRef.current) {
         cueRef.current.style.opacity = p < 0.04 ? String(1 - p / 0.04) : '0';
       }
@@ -168,6 +207,9 @@ const CinematicExperience: React.FC = () => {
 
       targetProgress = progress;
       startEasing();
+      // Past the pin `progress` is pinned at 1, so the clearing has to be
+      // driven from the raw scroll or the light would freeze on screen.
+      paintFlash();
     };
 
     const onScroll = () => {
@@ -224,6 +266,7 @@ const CinematicExperience: React.FC = () => {
       guardianRef.current?.unmount();
       guardianRef.current = null;
       unsubscribeProductStage();
+      unsubscribeFlash();
     };
   }, [prefersReducedMotion]);
 
@@ -246,6 +289,18 @@ const CinematicExperience: React.FC = () => {
 
   return (
     <div id="home" ref={wrapperRef} aria-hidden="true" className="relative w-full bg-space-black">
+      {/*
+        The Guardian's released light. OUTSIDE the pin and `fixed`, so it
+        survives the pin releasing and can fade out over the page — see
+        FLASH_CLEAR_PX. Inside the pin it died at the boundary and the site
+        slid up behind it, which is the interval this removes.
+      */}
+      <div
+        ref={flashRef}
+        aria-hidden="true"
+        className="fixed inset-0 z-[60] bg-white pointer-events-none"
+        style={{ opacity: 0, visibility: 'hidden' }}
+      />
       <div
         ref={pinRef}
         className="absolute inset-x-0 h-screen w-full overflow-hidden flex items-center justify-center pointer-events-none"
