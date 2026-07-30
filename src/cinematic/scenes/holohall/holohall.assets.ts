@@ -108,12 +108,3 @@ export function resolveSector(localProgress: number, out: SectorState): void {
     return;
   }
 }
-
-/**
- * Local progress past which every installation is asleep again and the
- * Guardian releases his light. Derived from the last sector so the cue and
- * the walk can never drift apart — it used to be a hardcoded global
- * progress inside `Guardian.ts`, which silently broke the moment this
- * region's distance changed.
- */
-export const HOLOHALL_SECTORS_END = HOLOHALL_SECTORS[HOLOHALL_SECTORS.length - 1].to;

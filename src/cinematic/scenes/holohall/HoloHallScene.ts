@@ -6,7 +6,6 @@ import {
   getHoloHallFramePath,
   HOLOHALL_PLAY_THROUGH,
   HOLOHALL_HOLD_FRAME,
-  HOLOHALL_SECTORS_END,
   resolveSector,
   type SectorState,
 } from './holohall.assets';
@@ -32,7 +31,6 @@ export function createHoloHallScene(): Scene {
   const sector: SectorState = { productId: null, wake: 0, anchorX: 0.5, anchorY: 0.5 };
   let lastProductId: string | null = null;
   let lastWakeStep = -1;
-  let sectorsComplete = false;
 
   return createFrameSequenceScene({
     id: 'holo-hall',
@@ -57,15 +55,6 @@ export function createHoloHallScene(): Scene {
           anchorX: sector.anchorX,
           anchorY: sector.anchorY,
         });
-      }
-
-      // The Guardian's cue, derived from the last installation's own window
-      // so it cannot drift from the walk the way a hardcoded global
-      // progress did.
-      const done = localProgress >= HOLOHALL_SECTORS_END;
-      if (done !== sectorsComplete) {
-        sectorsComplete = done;
-        cinematicEvents.emit('holo-hall:sectors-complete', { done });
       }
     },
   });

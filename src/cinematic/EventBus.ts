@@ -75,13 +75,6 @@ export interface CinematicEventMap {
     anchorX: number;
     anchorY: number;
   };
-  /**
-   * The last installation has returned to standby. The Guardian releases
-   * his light on this rather than on a hardcoded global progress, which is
-   * what used to couple him to this region's scroll distance — change the
-   * distance and the beam silently fired in the wrong place.
-   */
-  'holo-hall:sectors-complete': { done: boolean };
   [key: string]: unknown;
 }
 
