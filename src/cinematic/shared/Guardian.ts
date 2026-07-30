@@ -48,21 +48,48 @@ const PLANE_WIDTH = 1.85;
 /**
  * Luma matte knee, in 0-1 luminance.
  *
- * Measured on the shipped plate: the void reads 1-4 of 255 (0.004-0.016)
- * in every corner and along every border, while the armour reads 28.5
- * (0.112). That is a 7-28x separation, and it is the entire reason this
- * source works where the previous one could not — there the armour sat at
- * 14.2 against a darkest-background of 13.5, a ratio of 1.05, so no
- * threshold could ever tell figure from room.
+ * Re-measured properly in V9.4, because the first calibration was wrong.
+ * It sampled ONE 200x300 region that happened to include the lit chest
+ * emblem, read "armour = 28.5", and declared a 7-28x separation from the
+ * void. Sampling the whole figure and the whole void tells a different
+ * story:
  *
- * LOW sits above the void, HIGH at the armour, and the smoothstep between
- * them means the darkest parts of the suit stay semi-transparent rather
- * than being cut out. That is deliberate: a figure whose shadowed side
- * dissolves into the hall reads as standing IN the room. A hard cutout
- * reads as a sticker of a person.
+ *   figure   p20 7.1   p50 14.8   p70 24.6   p90 67.0
+ *   void     p50 5.1   p90 10.5   p95 12.5   p99 16.9   max 33.0
+ *
+ * They OVERLAP. The void's p90 is brighter than the figure's p30. The
+ * generator did not deliver the absolute black the spec asked for, so no
+ * per-pixel luma threshold can make this figure fully solid without the
+ * void starting to show as a haze.
+ *
+ * LOW sits just above the void's p90, so 90% of the background stays at
+ * exactly zero — cleaner than the old 0.025, which let the void's p90
+ * through at 10.5% alpha. HIGH is pulled in from 0.1 to 0.068 to open the
+ * middle: the armour's median tone goes from 36% opaque to 72%, and
+ * everything from p60 up is fully solid instead of 58%.
+ *
+ * The cost is honest and bounded. The void's p95 renders at 22% alpha and
+ * its p99 at ~99%, but those pixels are luma 12-17 and the grade below
+ * darkens them further, so they land as near-black specks over an already
+ * dark hall. The trade is 5% of the background gaining a barely visible
+ * shadow in exchange for the figure ceasing to be see-through.
  */
-const MATTE_LOW = 0.025;
-const MATTE_HIGH = 0.1;
+const MATTE_LOW = 0.041;
+const MATTE_HIGH = 0.068;
+
+/**
+ * Colour grade applied to what survives the matte: lift is subtracted
+ * first, then gain, then a saturation push.
+ *
+ * This is what answers "perdeu o brilho da armadura". It runs on RGB ONLY,
+ * never on the value the matte is computed from — so the void cannot be
+ * lifted by it, because black minus lift, times anything, is still black.
+ * The armour's mid-tones open up, the specular edges clip toward white,
+ * and the cyan seams saturate instead of sitting flat.
+ */
+const GRADE_LIFT = 0.02;
+const GRADE_GAIN = 1.55;
+const GRADE_SATURATION = 1.3;
 
 /**
  * How far alpha is forced to zero in from each edge of the plate, in UV.
@@ -113,9 +140,13 @@ interface GuardianPose extends Record<string, number> {
 const POSE_CURVE: ReadonlyArray<Keyframe<GuardianPose>> = [
   { t: 0.0, opacity: 0, scale: 0.9, lateral: -0.3, y: -0.35, z: -1.2 },
   { t: 0.5, opacity: 0, scale: 0.92, lateral: -0.34, y: -0.35, z: -1 },
-  { t: 0.62, opacity: 0.5, scale: 0.96, lateral: -0.38, y: -0.35, z: -0.5 },
-  { t: 0.78, opacity: 0.88, scale: 1, lateral: -0.4, y: -0.35, z: 0 },
-  { t: 1.0, opacity: 0.88, scale: 1, lateral: -0.4, y: -0.35, z: 0 },
+  // Opacity reaches 1. It used to top out at 0.88 and sit at 0.5 through
+  // the approach, which multiplied the matte a second time: the armour's
+  // median tone ended up 21% opaque, and he read as a ghost rather than a
+  // figure. The matte alone decides what is see-through now.
+  { t: 0.62, opacity: 0.85, scale: 0.96, lateral: -0.38, y: -0.35, z: -0.5 },
+  { t: 0.78, opacity: 1, scale: 1, lateral: -0.4, y: -0.35, z: 0 },
+  { t: 1.0, opacity: 1, scale: 1, lateral: -0.4, y: -0.35, z: 0 },
 ];
 
 const VERTEX_SHADER = /* glsl */ `
@@ -131,11 +162,19 @@ const FRAGMENT_SHADER = /* glsl */ `
   uniform float uOpacity;
   uniform vec4 uFeather; // left, right, bottom, top — in UV
   uniform vec2 uMatte;   // low, high
+  uniform vec3 uGrade;   // lift, gain, saturation
   varying vec2 vUv;
 
   void main() {
     vec4 tex = texture2D(uMap, vUv);
+    // Keyed off the UNGRADED luminance on purpose: grading the value the
+    // matte reads would lift the void along with the armour and hand the
+    // rectangle straight back.
     float luma = dot(tex.rgb, vec3(0.2126, 0.7152, 0.0722));
+
+    vec3 graded = max(vec3(0.0), tex.rgb - uGrade.x) * uGrade.y;
+    float gradedLuma = dot(graded, vec3(0.2126, 0.7152, 0.0722));
+    graded = clamp(mix(vec3(gradedLuma), graded, uGrade.z), 0.0, 1.0);
 
     // Black contributes nothing. No key colour, no chroma spill, no
     // rectangle — the void simply never becomes fragments.
@@ -147,7 +186,7 @@ const FRAGMENT_SHADER = /* glsl */ `
     float fy = smoothstep(0.0, uFeather.z, vUv.y) *
                smoothstep(0.0, uFeather.w, 1.0 - vUv.y);
 
-    gl_FragColor = vec4(tex.rgb, matte * fx * fy * uOpacity);
+    gl_FragColor = vec4(graded, matte * fx * fy * uOpacity);
     if (gl_FragColor.a < 0.002) discard;
   }
 `;
@@ -239,6 +278,7 @@ export class Guardian {
           ),
         },
         uMatte: { value: new THREE.Vector2(MATTE_LOW, MATTE_HIGH) },
+        uGrade: { value: new THREE.Vector3(GRADE_LIFT, GRADE_GAIN, GRADE_SATURATION) },
       },
       vertexShader: VERTEX_SHADER,
       fragmentShader: FRAGMENT_SHADER,
@@ -367,8 +407,34 @@ export class Guardian {
     cinematicEvents.emit('guardian:flash', { intensity: this.flashAlpha });
   }
 
+  /**
+   * Self-healing size check, once per frame.
+   *
+   * `mount` runs after the video has loaded, and at that moment the canvas
+   * may not be laid out yet — it falls back to 1x1 and relies on the single
+   * `resize` call that follows. If THAT lands while the pin still measures
+   * zero, the renderer stays 1x1 and gets stretched across the viewport,
+   * which looks exactly like the complaint that prompted this: a soft,
+   * matte Guardian with no shine. Reproduced in the preview after a cold
+   * start, where only a manual resize event recovered it.
+   *
+   * A slow phone loading a video over mobile data is precisely where that
+   * race is most likely, so the loop verifies rather than trusting one
+   * call at one moment.
+   */
+  private ensureSized(): void {
+    const canvas = this.renderer?.domElement;
+    if (!canvas || !this.renderer) return;
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    if (w === 0 || h === 0) return;
+    const ratio = this.renderer.getPixelRatio();
+    if (Math.abs(canvas.width - Math.round(w * ratio)) > 1) this.resize(w, h);
+  }
+
   private draw(): void {
     if (!this.renderer || !this.scene || !this.camera || !this.mesh || !this.material) return;
+    this.ensureSized();
 
     this.frameParity ^= 1;
     if (this.skipAlternateFrames && this.frameParity === 1) return;
