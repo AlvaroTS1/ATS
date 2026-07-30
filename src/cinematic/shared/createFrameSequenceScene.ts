@@ -11,8 +11,10 @@ export interface FrameSequenceSceneConfig {
   getFramePath: (index: number) => string;
   /** Frames loaded eagerly (in parallel) before background streaming begins. */
   eagerFrameCount?: number;
-  /** Hold the shot at this local-progress fraction (0-1) instead of playing to the very end. */
-  freezeAt?: number;
+  /** Fraction of local progress in which the shot COMPLETES; it holds after. */
+  playThrough?: number;
+  /** Which frame to hold once the shot has played through. Defaults to the last. */
+  holdFrame?: number;
   /** Fires on every `update()` with the raw local progress — lets a scene react to its own timing (e.g. Holo Hall revealing its React panels) without a bespoke Scene subclass. */
   onProgress?: (localProgress: number) => void;
 }
@@ -71,7 +73,8 @@ export function createFrameSequenceScene(config: FrameSequenceSceneConfig): Scen
         localProgress,
         frames.length,
         (i) => assetManager.isLoaded(frames[i]),
-        config.freezeAt ?? 1,
+        config.playThrough ?? 1,
+        config.holdFrame,
       );
       if (currentIndex >= 0 && currentIndex !== lastSampledIndex) {
         lastSampledIndex = currentIndex;

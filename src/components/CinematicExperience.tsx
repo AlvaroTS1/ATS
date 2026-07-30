@@ -12,7 +12,7 @@ import type { Guardian } from '../cinematic/shared/Guardian';
 import { cinematicEvents } from '../cinematic/EventBus';
 import { intToRgb } from '../cinematic/shared/colorLerp';
 import { getDeviceTier } from '../lib/deviceTier';
-import HoloProductPanels from './cinematic-overlays/HoloProductPanels';
+import HologramConsole from './cinematic-overlays/HologramConsole';
 import HeroHUD from './cinematic-overlays/HeroHUD';
 import FilmGrain from './cinematic-overlays/FilmGrain';
 
@@ -30,7 +30,7 @@ const MOBILE_BREAKPOINT_PX = 768;
  * mechanics (via `pinScrollMath.ts`, unchanged) and the stacked canvases —
  * one per scene, ordered so the earliest scene sits on top and fades away
  * to reveal the next one underneath. Every visual decision beyond that
- * belongs to the scenes themselves. `HoloProductPanels` is the one
+ * belongs to the scenes themselves. `HologramConsole` is the one
  * exception: real interactive React UI layered above every canvas,
  * choosing for itself when it can receive pointer events (see that
  * component and `HoloHallScene.ts`).
@@ -89,7 +89,7 @@ const CinematicExperience: React.FC = () => {
     ambientLayerRef.current = ambientLayer;
     ambientLayer.mount(ambientCanvas, getDeviceTier() === 'low' ? 16 : 42);
 
-    // A focused product (see HoloProductPanels) leans the whole ambience
+    // The awake installation (see HologramConsole) leans the whole ambience
     // toward its brand color — the environment itself reacts, not just the panel.
     const unsubscribeProductStage = cinematicEvents.on('products:stage', ({ color }) => {
       ambientLayerRef.current?.setTint(color !== null ? intToRgb(color) : null);
@@ -293,7 +293,7 @@ const CinematicExperience: React.FC = () => {
             just enough to keep every scene reading like one continuous shot. */}
         <div className="absolute inset-0 z-[26] pointer-events-none [background:radial-gradient(ellipse_at_center,transparent_55%,rgba(0,0,0,0.4)_100%)]" />
 
-        <HoloProductPanels />
+        <HologramConsole />
         <HeroHUD />
 
         {/* Above EVERYTHING, footage and interface alike — that is the whole

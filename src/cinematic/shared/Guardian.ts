@@ -2,25 +2,20 @@ import * as THREE from 'three';
 import { LoopingVideoTexture } from './LoopingVideoTexture';
 import { sampleKeyframes, type Keyframe } from './keyframes';
 import { sampleAmbient, type AmbientSample } from './sampleAmbient';
+import { cinematicEvents } from '../EventBus';
 
 const GUARDIAN_VIDEO = '/cinematic/guardian/guardian.mp4';
 const BEAM_VIDEO = '/cinematic/guardian/beam.mp4';
 
 /**
- * Global progress at which the beam fires.
+ * The beam is cued by the Hall itself, not by a global progress number.
  *
- * 0.6294 is where `holo-hall`'s interactive panels finish dissolving —
- * measured by sweeping the real `Timeline` against
- * `HOLOHALL_PANELS_HIDE_AT`, not estimated. The Hall takes the frame at
- * 0.6501, so the blowout lands exactly on the handoff between regions.
- *
- * That window is 0.02 of the whole journey, roughly 150px of scroll, which
- * is why the clip CANNOT be scrubbed by scroll: nobody would ever see it.
- * It fires once and plays out on the real clock.
+ * It used to be `BEAM_FIRES_AT = 0.6294`, measured by sweeping the real
+ * Timeline — correct at the time and silently wrong the moment that
+ * region's scroll distance changed, which it then did (750 -> 2400 for the
+ * walk between installations). `holo-hall:sectors-complete` says the same
+ * thing in terms that cannot drift: every installation is back on standby.
  */
-const BEAM_FIRES_AT = 0.6294;
-/** Scrolling back this far below the trigger re-arms it. Hysteresis, so it can't strobe. */
-const BEAM_REARM_BELOW = 0.56;
 
 /**
  * The flash is not a timed effect — it is the light he actually emits,
@@ -187,7 +182,9 @@ export class Guardian {
    * UNDER COVER of the white, so the swap is never seen) -> IDLE.
    */
   private beamState: 'idle' | 'firing' | 'decaying' = 'idle';
-  private beamArmed = true;
+  /** Set by the Hall's cue, consumed on the next frame. */
+  private beamRequested = false;
+  private unsubscribeCue: (() => void) | null = null;
   private flashAlpha = 0;
   private lastFrameTime = 0;
   private sampleCounter = 0;
@@ -285,6 +282,13 @@ export class Guardian {
     const beamEl = this.beam.element;
     if (beamEl) beamEl.currentTime = 0;
 
+    // The Hall tells him when every installation is back on standby. He
+    // does not watch scroll progress for it — that coupling broke silently
+    // the moment the region's distance changed.
+    this.unsubscribeCue = cinematicEvents.on('holo-hall:sectors-complete', ({ done }) => {
+      if (done) this.beamRequested = true;
+    });
+
     document.addEventListener('visibilitychange', this.onVisibilityChange);
     this.startLoop();
   }
@@ -335,9 +339,8 @@ export class Guardian {
     if (!this.material || !this.flashMaterial || !this.beam) return;
 
     if (this.beamState === 'idle') {
-      if (this.progress < BEAM_REARM_BELOW) this.beamArmed = true;
-      if (this.beamArmed && this.progress >= BEAM_FIRES_AT) {
-        this.beamArmed = false;
+      if (this.beamRequested) {
+        this.beamRequested = false;
         this.beamState = 'firing';
         this.flashAlpha = 0;
         if (this.beamTexture) this.material.uniforms.uMap.value = this.beamTexture;
@@ -413,6 +416,8 @@ export class Guardian {
 
   unmount(): void {
     this.stopLoop();
+    this.unsubscribeCue?.();
+    this.unsubscribeCue = null;
     document.removeEventListener('visibilitychange', this.onVisibilityChange);
 
     this.geometry?.dispose();
@@ -440,7 +445,7 @@ export class Guardian {
     this.flashMaterial = null;
     this.flash = null;
     this.beamState = 'idle';
-    this.beamArmed = true;
+    this.beamRequested = false;
     this.flashAlpha = 0;
     this.lastFrameTime = 0;
   }

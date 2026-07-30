@@ -18,7 +18,7 @@ import type { SceneDurationConfig } from './types';
  * reasoning as before, there's no visual mismatch to hide within one
  * continuous shot. `holo-hall` itself gets a larger overlap (0.12) since
  * it hands off to an actual style change (Fusion AI's abstract procedural
- * forms); its interactive React panels (see `HOLOHALL_PANELS_HIDE_AT`)
+ * forms); its holographic installations (see `holohall.assets.ts`)
  * are timed to finish dissolving just as this overlap begins, so they
  * never appear mid-cross-fade.
  *
@@ -63,7 +63,12 @@ export const SCENE_DURATIONS: SceneDurationConfig[] = [
   // Guardian's "awakening" belongs to a persistent layer over global
   // progress during this stretch, not to a separate scene mount.
   { id: 'portal-corridor', distance: 2250, overlap: 0.05 },
-  { id: 'holo-hall', distance: 750, overlap: 0.12 },
+  // V8: 750 -> 2400. The installations are walked past one at a time
+  // (`holohall.assets.ts`), and three of them need real distance — at 750
+  // each would have got about 48px of scroll, which is a flicker, not a
+  // walk. The shot itself still arrives in the first 30%; the rest is the
+  // stationary phase where the walking happens.
+  { id: 'holo-hall', distance: 2400, overlap: 0.12 },
   // The destination, and deliberately the LONGEST region of the journey:
   // this is where the user arrives and stays, so it gets the most room.
   // No overlap after it — the pin releases only once they've been inside

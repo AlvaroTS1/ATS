@@ -37,7 +37,6 @@ export interface CinematicEventMap {
   /** Fired only when the in-focus product actually changes (not every frame). `null` fields mean nothing is focused — the environment settles back to ATS cyan. */
   'products:stage': { productId: string | null; name: string | null; color: number | null };
   /** Fired only when the Holo Hall's interactive panel window is entered/exited (not every frame). */
-  'holo-hall:panels': { visible: boolean };
   /**
    * Fired once the arrival at the Hall has settled enough for the Hero to
    * exist — the interface is born inside the still-pinned universe, not
@@ -59,6 +58,30 @@ export interface CinematicEventMap {
    * actually was.
    */
   'cinematic:ambient-light': { brightness: number; r: number; g: number; b: number };
+  /**
+   * Which holographic installation in the Hall is awake, and how much.
+   *
+   * V8 replaced `holo-hall:panels` (a boolean that turned a row of three
+   * cards on and off at once) with this. The products are no longer
+   * presented side by side: they are installations at three points of the
+   * architecture, walked past one at a time, waking as the user approaches
+   * and returning to standby as they leave. `anchorX`/`anchorY` are
+   * normalized to the SOURCE frame, so the console can be placed on the
+   * footage's own console through `computeFrameFit`.
+   */
+  'holo-hall:sector': {
+    productId: string | null;
+    wake: number;
+    anchorX: number;
+    anchorY: number;
+  };
+  /**
+   * The last installation has returned to standby. The Guardian releases
+   * his light on this rather than on a hardcoded global progress, which is
+   * what used to couple him to this region's scroll distance — change the
+   * distance and the beam silently fired in the wrong place.
+   */
+  'holo-hall:sectors-complete': { done: boolean };
   [key: string]: unknown;
 }
 
