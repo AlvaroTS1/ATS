@@ -54,10 +54,22 @@ export class AssetManager {
     await Promise.all(eager.map((url, i) => loadOne(url, i === 0 ? 'high' : 'low')));
     if (this.cancelled) return;
 
-    for (const url of rest) {
-      if (this.cancelled) return;
-      await loadOne(url, 'low');
-    }
+    // Streamed with a small worker pool rather than one file fully finishing
+    // before the next starts. Frame order is preserved regardless — each
+    // worker pulls the next URL off the shared queue, so lower-index frames
+    // still tend to land first, and `pickFrameIndex` already falls back to
+    // whatever is loaded either way. Pure scheduling: bytes fetched, request
+    // count, and load order are unchanged, only wall-clock time for the tail
+    // of a sequence to finish streaming in.
+    let cursor = eager.length;
+    const worker = async () => {
+      while (!this.cancelled) {
+        const i = cursor++;
+        if (i >= urls.length) return;
+        await loadOne(urls[i], 'low');
+      }
+    };
+    await Promise.all(Array.from({ length: Math.min(4, rest.length) }, worker));
   }
 
   /** Stops any in-flight background preloading (does not evict the cache). */

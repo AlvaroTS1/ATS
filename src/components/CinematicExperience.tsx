@@ -128,15 +128,38 @@ const CinematicExperience: React.FC = () => {
     // eager main bundle — CinematicExperience isn't lazy-loaded, so a
     // static import here would drag the ~500KB library into first paint
     // (a bug this migration hit twice; the bundle is checked every build).
-    import('../cinematic/shared/Guardian').then(({ Guardian }) => {
+    //
+    // The `import()` — and with it `guardian.mp4`'s fetch — is deferred one
+    // idle tick past mount. Measured on load: without this, his 697KB video
+    // starts downloading at the same instant as the nucleus scene's eager
+    // frame batch, competing for bandwidth in the single most
+    // bandwidth-constrained moment of the visit. He has no visual reason to
+    // rush: his pose curve keeps him fully transparent until global progress
+    // 0.5, thousands of pixels of scroll away, so losing a beat here costs
+    // nothing he needs and gives the nucleus frames — what the user is
+    // actually looking at — the network first.
+    // `timeout` is load-bearing, not decoration. Measured: with no timeout,
+    // this experience's own continuous rAF loops (AmbientLayer's breathing,
+    // the scroll-easing loop) keep the main thread signalling "not idle"
+    // indefinitely — `requestIdleCallback` never fired at all in a 6.5s
+    // window. The timeout forces it to run anyway once that much time has
+    // passed, which is still well before he needs to be visible.
+    const scheduleIdle =
+      typeof requestIdleCallback === 'function'
+        ? (cb: () => void) => requestIdleCallback(cb, { timeout: 1500 })
+        : (cb: () => void) => setTimeout(cb, 1500);
+    scheduleIdle(() => {
       if (cancelled) return;
-      const tier = getDeviceTier();
-      const guardian = new Guardian();
-      guardianRef.current = guardian;
-      void guardian.mount(guardianCanvas, tier === 'high' ? 2 : 1.5, tier).then(() => {
+      import('../cinematic/shared/Guardian').then(({ Guardian }) => {
         if (cancelled) return;
-        guardian.resize(pin.clientWidth, pin.clientHeight);
-        guardian.setProgress(smoothedProgress);
+        const tier = getDeviceTier();
+        const guardian = new Guardian();
+        guardianRef.current = guardian;
+        void guardian.mount(guardianCanvas, tier === 'high' ? 2 : 1.5, tier).then(() => {
+          if (cancelled) return;
+          guardian.resize(pin.clientWidth, pin.clientHeight);
+          guardian.setProgress(smoothedProgress);
+        });
       });
     });
 
