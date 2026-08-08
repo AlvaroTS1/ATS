@@ -1,11 +1,38 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Menu, X, Cpu } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../lib/utils';
+
+/**
+ * Matches the fade+10px-slide `framer-motion` previously drove for the
+ * mobile dropdown (`initial={{opacity:0,y:-10}}`, `animate={{opacity:1,y:0}}`,
+ * default tween timing). Replaced because `motion` + `motion-dom` alone
+ * measured at 383KB rendered — ~45% of the whole critical-path bundle —
+ * for exactly this one fade/slide and one other in `WaitlistProvider`.
+ * Neither used any framer-motion feature (drag, layout animation, gesture
+ * physics) that CSS transitions cannot reproduce.
+ */
+const MENU_TRANSITION_MS = 200;
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // Kept mounted slightly past `isMenuOpen: false` so the closing transition
+  // — the CSS replacement for `AnimatePresence`'s exit animation — has time
+  // to play before the element leaves the DOM.
+  const [isMenuRendered, setIsMenuRendered] = useState(false);
+  const unmountTimer = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (isMenuOpen) {
+      if (unmountTimer.current !== null) window.clearTimeout(unmountTimer.current);
+      setIsMenuRendered(true);
+      return;
+    }
+    unmountTimer.current = window.setTimeout(() => setIsMenuRendered(false), MENU_TRANSITION_MS);
+    return () => {
+      if (unmountTimer.current !== null) window.clearTimeout(unmountTimer.current);
+    };
+  }, [isMenuOpen]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -87,36 +114,36 @@ const Header = () => {
       </div>
 
       {/* Mobile Navigation */}
-      <AnimatePresence>
-        {isMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="md:hidden mx-4 mt-2 bg-space-black/95 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl"
-          >
-            <nav className="flex flex-col p-5 gap-3">
-              {navLinks.map((link) => (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  className="text-sm font-medium text-gray-400 hover:text-neon-cyan py-2.5 border-b border-white/5 transition-colors"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {link.name}
-                </a>
-              ))}
+      {isMenuRendered && (
+        <div
+          className="md:hidden mx-4 mt-2 bg-space-black/95 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl transition-[opacity,transform] ease-out"
+          style={{
+            transitionDuration: `${MENU_TRANSITION_MS}ms`,
+            opacity: isMenuOpen ? 1 : 0,
+            transform: isMenuOpen ? 'translateY(0)' : 'translateY(-10px)',
+          }}
+        >
+          <nav className="flex flex-col p-5 gap-3">
+            {navLinks.map((link) => (
               <a
-                href="#contact"
-                className="mt-3 text-center py-3.5 rounded-xl bg-gradient-to-r from-neon-cyan to-cyber-purple text-space-black font-bold text-sm tracking-wide uppercase shadow-lg shadow-neon-cyan/20"
+                key={link.name}
+                href={link.href}
+                className="text-sm font-medium text-gray-400 hover:text-neon-cyan py-2.5 border-b border-white/5 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Fale Conosco
+                {link.name}
               </a>
-            </nav>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            ))}
+            <a
+              href="#contact"
+              className="mt-3 text-center py-3.5 rounded-xl bg-gradient-to-r from-neon-cyan to-cyber-purple text-space-black font-bold text-sm tracking-wide uppercase shadow-lg shadow-neon-cyan/20"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Fale Conosco
+            </a>
+          </nav>
+        </div>
+      )}
     </header>
   );
 };

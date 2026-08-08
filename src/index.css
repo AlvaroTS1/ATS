@@ -222,3 +222,48 @@ body {
   animation: film-grain-shift 0.7s steps(1) infinite;
 }
 
+/*
+ * The waitlist modal's entrance (`WaitlistProvider.tsx`) — replaces
+ * `framer-motion`, which measured at 383KB rendered across the critical
+ * bundle (`motion` + `motion-dom` + `motion-utils`) for exactly this
+ * animation plus Header's mobile-menu fade. Neither used any
+ * framer-motion feature (drag, layout animation, gesture physics) a
+ * `transition` or `animation` can't reproduce.
+ *
+ * `@keyframes` rather than `transition`, deliberately: a plain CSS
+ * transition never plays on first mount — there is no PRIOR style for the
+ * browser to transition FROM, so a freshly-rendered element just appears
+ * already at its final state. `animation` plays on mount by definition,
+ * which is what this needs (the modal is conditionally rendered, so every
+ * appearance IS a mount).
+ *
+ * The panel had no `AnimatePresence` around it in the framer-motion
+ * version, so closing was already an instant unmount with no exit
+ * animation — preserved exactly here; only the entrance needed replacing.
+ */
+@keyframes waitlist-backdrop-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.animate-waitlist-backdrop {
+  animation: waitlist-backdrop-in 200ms ease forwards;
+}
+
+/*
+ * The panel used `transition={{ type: 'spring', duration: 0.45 }}` with no
+ * bounce configured — a critically-damped spring at that duration reads as
+ * fast-start, smooth-settle with no overshoot, which
+ * `cubic-bezier(0.16, 1, 0.3, 1)` approximates closely. Same curve family
+ * already used for `reveal-focus` elsewhere in this file, kept consistent
+ * rather than inventing a second "something resolving into place" feel.
+ */
+@keyframes waitlist-panel-in {
+  from { opacity: 0; transform: scale(0.94) translateY(20px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.animate-waitlist-panel {
+  animation: waitlist-panel-in 450ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+

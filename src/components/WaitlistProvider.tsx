@@ -5,7 +5,6 @@ import React, {
   useEffect,
   useState,
 } from 'react';
-import { motion } from 'framer-motion';
 import { X, Send, Loader2, CheckCircle2, XCircle, BellRing } from 'lucide-react';
 
 interface WaitlistContextValue {
@@ -78,12 +77,8 @@ export const WaitlistProvider: React.FC<{ children: React.ReactNode }> = ({
     <WaitlistContext.Provider value={{ open }}>
       {children}
       {product && (
-          <motion.div
-            key="waitlist-modal"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+          <div
+            className="animate-waitlist-backdrop fixed inset-0 z-[100] flex items-center justify-center p-4"
             role="dialog"
             aria-modal="true"
             aria-label={`Lista de espera do ${product}`}
@@ -94,11 +89,8 @@ export const WaitlistProvider: React.FC<{ children: React.ReactNode }> = ({
               onClick={close}
             />
 
-            <motion.div
-              initial={{ opacity: 0, scale: 0.94, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ type: 'spring', duration: 0.45 }}
-              className="relative w-full max-w-md bg-space-dark/95 border border-white/10 rounded-2xl shadow-2xl p-7 md:p-8 overflow-hidden"
+            <div
+              className="animate-waitlist-panel relative w-full max-w-md bg-space-dark/95 border border-white/10 rounded-2xl shadow-2xl p-7 md:p-8 overflow-hidden"
             >
               <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-neon-cyan to-cyber-purple" />
 
@@ -208,8 +200,8 @@ export const WaitlistProvider: React.FC<{ children: React.ReactNode }> = ({
                   </form>
                 </>
               )}
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         )}
     </WaitlistContext.Provider>
   );
