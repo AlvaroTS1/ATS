@@ -8,9 +8,9 @@ import StatusBadge from '../ui/StatusBadge';
 import { useAmbientLight } from '../../hooks/useAmbientLight';
 import { cn } from '../../lib/utils';
 
-/** The source frames are 540x960; the anchors are normalized against them. */
-const SOURCE_WIDTH = 540;
-const SOURCE_HEIGHT = 960;
+/** The Hero video is 720x1280; the anchors are normalized against it. */
+const SOURCE_WIDTH = 720;
+const SOURCE_HEIGHT = 1280;
 
 /** Console size. One at a time means it only has to fit the frame, not two siblings. */
 const CONSOLE_MAX_WIDTH = 320;
