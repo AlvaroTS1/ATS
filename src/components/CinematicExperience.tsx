@@ -65,11 +65,21 @@ const smoothstep = (t: number): number => {
 };
 
 /**
- * Host for the Hero. One scroll-scrubbed video (see `guardian.mp4`) full
- * bleed behind the interface, no WebGL — the matte/composite stack this
- * replaced existed to key a small figure out of a void-plate; this footage
- * is a complete, already-lit shot, so a plain `<video>` scrubbed by scroll
- * progress is both the correct fit and the lighter one.
+ * Host for the Hero. One video (see `guardian.mp4`) full bleed behind the
+ * interface, no WebGL — the matte/composite stack this replaced existed to
+ * key a small figure out of a void-plate; this footage is a complete,
+ * already-lit shot, so a plain `<video>` is both the correct fit and the
+ * lighter one.
+ *
+ * Plays on its OWN real-time clock (autoplay + loop), not scrubbed by
+ * scroll. It was scroll-scrubbed at first — `video.currentTime = progress *
+ * duration` on every eased scroll step — which reads fine for a frame
+ * SEQUENCE (any image is equally cheap to show) but stalls a real video:
+ * every seek has to land on or decode forward from the nearest keyframe,
+ * and scrolling constantly asks for out-of-order timestamps the decoder
+ * has to re-seek for, which is exactly the stutter/freeze this was
+ * reported for. Scroll still drives the pin, the product sectors and the
+ * Hero HUD — it just no longer touches the video element.
  */
 const CinematicExperience: React.FC = () => {
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -135,13 +145,6 @@ const CinematicExperience: React.FC = () => {
     };
 
     const pushWorldProgress = (p: number) => {
-      // Scrubbed, not played — the whole clip maps onto the pinned scroll
-      // range, so scrolling back always retracts to an earlier frame.
-      if (video.duration) {
-        const target = Math.min(video.duration, Math.max(0, p * video.duration));
-        if (Math.abs(target - video.currentTime) >= 1 / 60) video.currentTime = target;
-      }
-
       ambientLayerRef.current?.setScrollProgress(p);
       resolveSector(p);
       cinematicEvents.emit('holo-hall:sector', {
@@ -206,15 +209,10 @@ const CinematicExperience: React.FC = () => {
       ambientLayerRef.current?.resize(pin.clientWidth, pin.clientHeight);
     };
 
-    video.addEventListener(
-      'loadedmetadata',
-      () => {
-        applyPinState();
-        smoothedProgress = targetProgress;
-        pushWorldProgress(smoothedProgress);
-      },
-      { once: true },
-    );
+    // Autoplay can be blocked before any user gesture — the loop attribute
+    // and this call are enough to resume the moment it's allowed to, same
+    // pattern `LoopingVideoTexture` used for the old composited plane.
+    void video.play().catch(() => {});
 
     applyPinState();
     ambientLayerRef.current?.resize(pin.clientWidth, pin.clientHeight);
@@ -242,6 +240,8 @@ const CinematicExperience: React.FC = () => {
       >
         <video
           src={GUARDIAN_VIDEO}
+          autoPlay
+          loop
           muted
           playsInline
           preload="metadata"
@@ -261,6 +261,8 @@ const CinematicExperience: React.FC = () => {
         <video
           ref={videoRef}
           src={GUARDIAN_VIDEO}
+          autoPlay
+          loop
           muted
           playsInline
           preload="auto"
