@@ -48,48 +48,37 @@ const PLANE_WIDTH = 1.85;
 /**
  * Luma matte knee, in 0-1 luminance.
  *
- * Re-measured properly in V9.4, because the first calibration was wrong.
- * It sampled ONE 200x300 region that happened to include the lit chest
- * emblem, read "armour = 28.5", and declared a 7-28x separation from the
- * void. Sampling the whole figure and the whole void tells a different
- * story:
+ * Disabled (pass-through) as of the "videooficialats" swap. That source is
+ * NOT a void plate — it is a fully lit corridor with its own walls, floor
+ * and reflections, shot to be its own complete scene rather than a figure
+ * on black. Measured directly off the shipped frames: ~73% of the pixels
+ * already sit above the old HIGH knee (0.068), which is a different
+ * problem than the old footage's overlap — that was void bleeding through
+ * as haze; this is the entire background reading as "figure" and going
+ * fully solid, keying nothing out.
  *
- *   figure   p20 7.1   p50 14.8   p70 24.6   p90 67.0
- *   void     p50 5.1   p90 10.5   p95 12.5   p99 16.9   max 33.0
- *
- * They OVERLAP. The void's p90 is brighter than the figure's p30. The
- * generator did not deliver the absolute black the spec asked for, so no
- * per-pixel luma threshold can make this figure fully solid without the
- * void starting to show as a haze.
- *
- * LOW sits just above the void's p90, so 90% of the background stays at
- * exactly zero — cleaner than the old 0.025, which let the void's p90
- * through at 10.5% alpha. HIGH is pulled in from 0.1 to 0.068 to open the
- * middle: the armour's median tone goes from 36% opaque to 72%, and
- * everything from p60 up is fully solid instead of 58%.
- *
- * The cost is honest and bounded. The void's p95 renders at 22% alpha and
- * its p99 at ~99%, but those pixels are luma 12-17 and the grade below
- * darkens them further, so they land as near-black specks over an already
- * dark hall. The trade is 5% of the background gaining a barely visible
- * shadow in exchange for the figure ceasing to be see-through.
+ * LOW just below 0 and HIGH at 0 makes `smoothstep(uMatte.x, uMatte.y,
+ * luma)` evaluate to 1 for every real pixel (luma >= 0) and only ever 0 for
+ * exact black — i.e. the whole plate renders, which is what a self-lit
+ * source needs. The feather uniforms below still soften the plate's own
+ * edges, so it reads as a panel rather than a hard-edged rectangle.
  */
-const MATTE_LOW = 0.041;
-const MATTE_HIGH = 0.068;
+const MATTE_LOW = -0.01;
+const MATTE_HIGH = 0.0;
 
 /**
  * Colour grade applied to what survives the matte: lift is subtracted
  * first, then gain, then a saturation push.
  *
- * This is what answers "perdeu o brilho da armadura". It runs on RGB ONLY,
- * never on the value the matte is computed from — so the void cannot be
- * lifted by it, because black minus lift, times anything, is still black.
- * The armour's mid-tones open up, the specular edges clip toward white,
- * and the cyan seams saturate instead of sitting flat.
+ * Identity as of the "videooficialats" swap. The old values (lift 0.02,
+ * gain 1.55, saturation 1.3) were calibrated to rescue a deliberately dark,
+ * under-lit plate shot for keying — pushing this fully-graded, already-lit
+ * footage through the same curve just blows out the highlights and
+ * oversaturates the cyan practicals it already has baked in.
  */
-const GRADE_LIFT = 0.02;
-const GRADE_GAIN = 1.55;
-const GRADE_SATURATION = 1.3;
+const GRADE_LIFT = 0.0;
+const GRADE_GAIN = 1.0;
+const GRADE_SATURATION = 1.0;
 
 /**
  * How far alpha is forced to zero in from each edge of the plate, in UV.
