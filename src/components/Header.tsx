@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, X, Cpu } from 'lucide-react';
+import { Menu, X, Cpu, ArrowRight } from 'lucide-react';
+import VotrixMark from './votrix/VotrixMark';
 import { cn } from '../lib/utils';
 
 /**
@@ -44,6 +45,7 @@ const Header = () => {
 
   const navLinks = [
     { name: 'Início', href: '#home' },
+    { name: 'VOTRIX', href: '#votrix', highlight: true },
     { name: 'Soluções', href: '#solutions' },
     { name: 'Roadmap', href: '#roadmap' },
     { name: 'Sobre', href: '#about' },
@@ -55,10 +57,27 @@ const Header = () => {
       className={cn(
         'fixed top-0 left-0 right-0 z-50 transition-all duration-500',
         isScrolled 
-          ? 'py-3' 
-          : 'py-6'
+          ? 'pb-3' 
+          : 'pb-6'
       )}
     >
+      {/* Launch banner: VOTRIX is the flagship, so it is one tap away from anywhere on the page — even mid-Hero. */}
+      <a
+        href="#votrix"
+        className={cn(
+          'group flex items-center justify-center gap-2 border-b border-cyan-300/15 bg-gradient-to-r from-[#0a1a33]/95 via-[#06201c]/95 to-[#0a1a33]/95 px-4 text-[11px] sm:text-xs font-medium text-gray-200 backdrop-blur-md transition-all duration-500',
+          isScrolled ? 'py-1.5 mb-3' : 'py-2 mb-4',
+        )}
+      >
+        <VotrixMark className="h-4 w-4 shrink-0" />
+        <span className="rounded-full bg-emerald-400/15 px-1.5 py-px text-[9px] font-bold uppercase tracking-wider text-emerald-300">Novo</span>
+        <span className="truncate">
+          <strong className="font-bold tracking-wider text-white">VOTRIX</strong>
+          <span className="hidden sm:inline"> — seu voto verificável, intransferível e imutável, com prova no Bitcoin</span>
+          <span className="sm:hidden"> — voto verificável em blockchain</span>
+        </span>
+        <ArrowRight className="h-3.5 w-3.5 shrink-0 text-cyan-300 transition-transform group-hover:translate-x-1" />
+      </a>
       <div className="container mx-auto px-4 md:px-6">
         <div 
           className={cn(
@@ -89,8 +108,12 @@ const Header = () => {
               <a
                 key={link.name}
                 href={link.href}
-                className="text-xs font-semibold uppercase tracking-wider text-gray-400 hover:text-neon-cyan transition-colors relative py-2 group"
+                className={cn(
+                  'text-xs font-semibold uppercase tracking-wider transition-colors relative py-2 group',
+                  link.highlight ? 'text-cyan-300 hover:text-emerald-300 flex items-center gap-1.5' : 'text-gray-400 hover:text-neon-cyan',
+                )}
               >
+                {link.highlight && <VotrixMark className="h-4 w-4" />}
                 {link.name}
                 <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-gradient-to-r from-neon-cyan to-cyber-purple group-hover:w-full transition-all duration-300" />
               </a>
@@ -128,10 +151,15 @@ const Header = () => {
               <a
                 key={link.name}
                 href={link.href}
-                className="text-sm font-medium text-gray-400 hover:text-neon-cyan py-2.5 border-b border-white/5 transition-colors"
+                className={cn(
+                  'text-sm font-medium py-2.5 border-b border-white/5 transition-colors flex items-center gap-2',
+                  link.highlight ? 'text-cyan-300 font-bold' : 'text-gray-400 hover:text-neon-cyan',
+                )}
                 onClick={() => setIsMenuOpen(false)}
               >
+                {link.highlight && <VotrixMark className="h-4 w-4" />}
                 {link.name}
+                {link.highlight && <span className="ml-auto text-[10px] font-semibold uppercase tracking-wider text-emerald-300">Novo</span>}
               </a>
             ))}
             <a

@@ -21,6 +21,7 @@ const roadmap: RoadmapItem[] = [
     description:
       'Soluções já disponíveis e em uso real por pessoas e empresas.',
     items: [
+      'VOTRIX — votação digital verificável',
       'Reencontra — proteção familiar via QR',
       'Coffee Break — app publicado na Play Store',
       'Fusion Buy AI — assistente de compras',

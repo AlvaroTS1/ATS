@@ -29,7 +29,7 @@ export default defineConfig({
     tsconfigPaths(),
     Sitemap({
       hostname: 'https://www.atssistemas.ia.br',
-      dynamicRoutes: ['/', '/#solutions', '/#roadmap', '/#about', '/#faq', '/#contact', '/privacidade', '/termos'],
+      dynamicRoutes: ['/', '/#votrix', '/#solutions', '/#roadmap', '/#about', '/#faq', '/#contact', '/privacidade', '/termos'],
       robots: [{
         userAgent: '*',
         allow: '/'

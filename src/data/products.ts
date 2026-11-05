@@ -4,6 +4,7 @@ import {
   Coffee,
   Boxes,
   Sparkles,
+  Vote,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -56,6 +57,45 @@ export interface Product {
  * product is added in one place and appears everywhere consistently.
  */
 export const products: Product[] = [
+  {
+    id: 'votrix',
+    name: 'VOTRIX',
+    category: 'Votação Digital Verificável · SaaS',
+    tagline: 'Seu voto verificável, intransferível e imutável.',
+    status: 'available',
+    short:
+      'Votações e assembleias online em que ninguém vê em quem você votou — e qualquer pessoa pode conferir o resultado. Cada voto vira um bloco encadeado, com prova carimbada no Bitcoin.',
+    long:
+      'O VOTRIX é a plataforma de votação digital da ATS para condomínios, associações, cooperativas, conselhos e universidades. A cédula é cifrada no aparelho, cada participante recebe uma credencial única e anônima, e cada voto é selado num quadro público encadeado por hashes, com as raízes de Merkle carimbadas no Bitcoin.',
+    highlights: [
+      {
+        title: 'Verificável',
+        description:
+          'Comprovante com código de rastreio e verificador independente que recalcula a apuração inteira.',
+      },
+      {
+        title: 'Intransferível',
+        description:
+          'Credencial única e anônima por pessoa: uma credencial, um voto. CPF verificado contra contas duplicadas.',
+      },
+      {
+        title: 'Imutável',
+        description:
+          'Corrente de blocos por hash: mudar um voto quebra a corrente. Raízes carimbadas no Bitcoin.',
+      },
+    ],
+    icon: Vote,
+    accent: { from: '#22D3EE', to: '#34D399', glow: 'rgba(34,211,238,0.35)' },
+    ctas: [
+      {
+        label: 'Criar votação grátis',
+        href: 'https://votrix.atssistemas.ia.br/cadastro',
+        variant: 'primary',
+        external: true,
+      },
+      { label: 'Saiba mais', href: '#votrix', variant: 'ghost' },
+    ],
+  },
   {
     id: 'reencontra',
     name: 'Reencontra',

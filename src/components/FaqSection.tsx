@@ -10,11 +10,15 @@ const faqs = [
   },
   {
     q: 'Os produtos já estão disponíveis?',
-    a: 'Sim. Reencontra, Coffee Break e Fusion Buy AI já estão no ar e podem ser acessados agora. Fusion AI e Giro IA estão em desenvolvimento — você pode entrar na lista de espera para ser avisado no lançamento.',
+    a: 'Sim. VOTRIX, Reencontra, Coffee Break e Fusion Buy AI já estão no ar e podem ser acessados agora. Fusion AI e Giro IA estão em desenvolvimento — você pode entrar na lista de espera para ser avisado no lançamento.',
+  },
+  {
+    q: 'O que é o VOTRIX e como ele usa blockchain?',
+    a: 'O VOTRIX é a nossa plataforma de votação digital verificável para condomínios, associações, cooperativas, conselhos e universidades. Cada voto é cifrado no aparelho de quem vota, selado num quadro público em que cada bloco carrega o hash do anterior, e o resumo desse quadro (a raiz de Merkle) é carimbado no Bitcoin. No Bitcoin nunca vão votos, nomes ou dados pessoais — só a prova de que nada foi alterado. São 7 dias grátis em votrix.atssistemas.ia.br.',
   },
   {
     q: 'Como faço para acessar ou baixar um produto?',
-    a: 'Cada solução tem seus próprios botões de acesso na seção "Nossas Soluções". O Coffee Break está disponível na Play Store, o Reencontra e o Fusion Buy AI funcionam direto pelo navegador.',
+    a: 'Cada solução tem seus próprios botões de acesso na seção "Nossas Soluções". O Coffee Break está disponível na Play Store; o VOTRIX, o Reencontra e o Fusion Buy AI funcionam direto pelo navegador.',
   },
   {
     q: 'Como entro na lista de espera dos próximos lançamentos?',

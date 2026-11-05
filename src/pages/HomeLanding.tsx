@@ -25,6 +25,7 @@ import CinematicExperience from '../components/CinematicExperience';
  * guarantees in practice: no spinner is a real fallback that is
  * essentially never hit, not a fallback that was skipped.
  */
+const VotrixSection = lazy(() => import('../components/VotrixSection'));
 const SolutionsSection = lazy(() => import('../components/SolutionsSection'));
 const ServicesSection = lazy(() => import('../components/ServicesSection'));
 const AppsDevSection = lazy(() => import('../components/AppsDevSection'));
@@ -49,6 +50,7 @@ const HomeLanding: React.FC = () => {
         ? (cb: () => void) => requestIdleCallback(cb, { timeout: 1500 })
         : (cb: () => void) => setTimeout(cb, 1500);
     scheduleIdle(() => {
+      void import('../components/VotrixSection');
       void import('../components/SolutionsSection');
       void import('../components/ServicesSection');
       void import('../components/AppsDevSection');
@@ -83,9 +85,13 @@ const HomeLanding: React.FC = () => {
             que resolvem problemas reais — de proteção familiar a assistentes
             de IA.
           </p>
+          <a href="#votrix">Conheça o VOTRIX: seu voto verificável, intransferível e imutável</a>
           <a href="#solutions">Explorar soluções</a>
           <a href="#contact">Falar com a ATS</a>
         </div>
+        <Suspense fallback={null}>
+          <VotrixSection />
+        </Suspense>
         <Suspense fallback={null}>
           <SolutionsSection />
         </Suspense>

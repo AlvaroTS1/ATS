@@ -6,7 +6,7 @@ import { REVEAL_DORMANT, revealDelay } from '../../lib/reveal';
 import { useAmbientLight } from '../../hooks/useAmbientLight';
 
 const stats = [
-  { value: '5', label: 'Produtos' },
+  { value: '6', label: 'Produtos' },
   { value: '2', label: 'A caminho' },
   { value: '100%', label: 'Problemas reais' },
 ];
