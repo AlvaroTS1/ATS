@@ -13,8 +13,8 @@ const faqs = [
     a: 'Sim. VOTRIX, Reencontra, Coffee Break e Fusion Buy AI já estão no ar e podem ser acessados agora. Fusion AI e Giro IA estão em desenvolvimento — você pode entrar na lista de espera para ser avisado no lançamento.',
   },
   {
-    q: 'O que é o VOTRIX e como ele usa blockchain?',
-    a: 'O VOTRIX é a nossa plataforma de votação digital verificável para condomínios, associações, cooperativas, conselhos e universidades. Cada voto é cifrado no aparelho de quem vota, selado num quadro público em que cada bloco carrega o hash do anterior, e o resumo desse quadro (a raiz de Merkle) é carimbado no Bitcoin. No Bitcoin nunca vão votos, nomes ou dados pessoais — só a prova de que nada foi alterado. São 7 dias grátis em votrix.atssistemas.ia.br.',
+    q: 'O que é o VOTRIX?',
+    a: 'É a nossa plataforma de votação digital para organizações: o voto é secreto e o resultado pode ser conferido por qualquer pessoa, com prova registrada no Bitcoin. Saiba mais em votrix.atssistemas.ia.br.',
   },
   {
     q: 'Como faço para acessar ou baixar um produto?',
