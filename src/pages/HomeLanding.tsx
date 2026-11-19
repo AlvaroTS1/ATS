@@ -1,6 +1,7 @@
 import React, { Suspense, lazy, useEffect } from 'react';
 import Header from '../components/Header';
 import CoreExperience from '../components/experience/CoreExperience';
+import MobileDock from '../components/MobileDock';
 
 /**
  * Below-the-fold sections, lazy by construction.
@@ -101,6 +102,9 @@ const HomeLanding: React.FC = () => {
       <Suspense fallback={null}>
         <Footer />
       </Suspense>
+      {/* Espaço para a barra flutuante não cobrir o fim do rodapé no celular. */}
+      <div aria-hidden="true" className="h-24 md:hidden" />
+      <MobileDock />
     </div>
   );
 };

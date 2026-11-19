@@ -6,19 +6,27 @@ import SectionHeading from './ui/SectionHeading';
 const faqs = [
   {
     q: 'O que é a ATS Sistemas de Automações?',
-    a: 'Somos uma empresa de tecnologia que cria produtos digitais inteligentes. Em vez de projetos isolados, construímos um ecossistema de soluções — de proteção familiar a assistentes de IA — que resolvem problemas reais do dia a dia.',
+    a: 'Somos uma empresa de tecnologia que cria produtos digitais inteligentes. Em vez de projetos isolados, construímos um ecossistema de soluções — de comunicação de emergência e proteção familiar a assistentes de IA — que resolvem problemas reais do dia a dia.',
   },
   {
     q: 'Os produtos já estão disponíveis?',
-    a: 'Sim. VOTRIX, Reencontra, Coffee Break e Fusion Buy AI já estão no ar e podem ser acessados agora. Fusion AI e Giro IA estão em desenvolvimento — você pode entrar na lista de espera para ser avisado no lançamento.',
+    a: 'Sim. VOTRIX, Reencontra, Coffee Break e Fusion Buy AI já estão no ar e podem ser acessados agora, e a ANANKE está em beta aberto para Android. Fusion AI e Giro IA estão em desenvolvimento — você pode entrar na lista de espera para ser avisado no lançamento.',
   },
   {
     q: 'O que é o VOTRIX?',
     a: 'É a nossa plataforma de votação digital para organizações: o voto é secreto e o resultado pode ser conferido por qualquer pessoa, com prova registrada no Bitcoin. Saiba mais em votrix.atssistemas.ia.br.',
   },
   {
+    q: 'O que é a ANANKE?',
+    a: 'É uma rede de comunicação de emergência que funciona sem internet. Os celulares próximos se conectam por Wi-Fi local ou Bluetooth e repassam mensagens cifradas uns pelos outros, sem servidor central. Tem pedido de ajuda (SOS) com localização, alertas, grupos e um mapa comunitário de hospitais, abrigos e pontos de apoio. A comunicação essencial é gratuita e não vende dados.',
+  },
+  {
+    q: 'Como instalo a ANANKE?',
+    a: 'Toque em "Baixar APK (Android)" na seção da ANANKE e abra o arquivo baixado. Na primeira vez, o Android pede para permitir a instalação de apps desta fonte: é só autorizar. Em breve ela estará também no Google Play.',
+  },
+  {
     q: 'Como faço para acessar ou baixar um produto?',
-    a: 'Cada solução tem seus próprios botões de acesso na seção "Nossas Soluções". O Coffee Break está disponível na Play Store; o VOTRIX, o Reencontra e o Fusion Buy AI funcionam direto pelo navegador.',
+    a: 'Cada solução tem seus próprios botões de acesso na seção "Nossas Soluções". O Coffee Break está disponível na Play Store; a ANANKE pode ser instalada pelo APK para Android; o VOTRIX, o Reencontra e o Fusion Buy AI funcionam direto pelo navegador.',
   },
   {
     q: 'Como entro na lista de espera dos próximos lançamentos?',

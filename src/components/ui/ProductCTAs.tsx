@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, ArrowUpRight } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, Download } from 'lucide-react';
 import type { Product } from '../../data/products';
 import { useWaitlist } from '../WaitlistProvider';
 import { cn } from '../../lib/utils';
@@ -18,7 +18,8 @@ const ProductCTAs: React.FC<ProductCTAsProps> = ({
 }) => {
   const { open } = useWaitlist();
 
-  const pad = size === 'sm' ? 'px-4 py-2.5 text-xs' : 'px-5 py-3 text-sm';
+  // min-h-11 = 44px, a área mínima confortável para o polegar.
+  const pad = size === 'sm' ? 'px-4 py-2.5 text-xs min-h-11' : 'px-5 py-3 text-sm min-h-11';
 
   return (
     <div className={cn('flex flex-wrap items-center gap-3', className)}>
@@ -47,7 +48,9 @@ const ProductCTAs: React.FC<ProductCTAsProps> = ({
         const content = (
           <>
             {cta.label}
-            {cta.external ? (
+            {cta.download ? (
+              <Download className="w-4 h-4 opacity-80 group-hover/cta:translate-y-0.5 transition-transform" />
+            ) : cta.external ? (
               <ArrowUpRight className="w-4 h-4 opacity-80 group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-0.5 transition-transform" />
             ) : (
               <ArrowRight className="w-4 h-4 opacity-80 group-hover/cta:translate-x-0.5 transition-transform" />
@@ -68,10 +71,14 @@ const ProductCTAs: React.FC<ProductCTAsProps> = ({
           );
         }
 
+        // `download` só vale para arquivo do próprio site; num link externo
+        // (Drive, Play Store) o navegador ignora e abre a página normalmente.
+        const sameOrigin = cta.href?.startsWith('/') ?? false;
         return (
           <a
             key={cta.label}
             href={cta.href}
+            download={cta.download && sameOrigin ? '' : undefined}
             target={cta.external ? '_blank' : undefined}
             rel={cta.external ? 'noopener noreferrer' : undefined}
             className={className}
