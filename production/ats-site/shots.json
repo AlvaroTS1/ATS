@@ -1,0 +1,288 @@
+{
+  "production": "ats-site",
+  "title": "ATS Sistemas — Core Experience",
+  "site": true,
+  "budgets": {
+    "desktopMiB": 32,
+    "mobileMiB": 16
+  },
+  "creditRates": {
+    "_fonte": "Estimativa: indicador do Dreamina lido por terceiros em 2026-09-03. Confirmar no Dreamina antes de gerar.",
+    "Seedance 2.5": {
+      "480P": 17,
+      "720P": 37,
+      "1080P": 91
+    },
+    "Seedance 2.0 Mini": {
+      "480P": 2.5,
+      "720P": 5
+    }
+  },
+  "styleLock": "Dark cinematic technology film. Deep near-black space lit only by self-emissive light. Brand palette: cyan #29ABE2 and electric blue #00D4FF as the dominant light, violet #A855F7 as the only secondary accent, cool white #EAF6FF only at the hottest points. Precise, engineered, calm; fine volumetric glow and sparse floating particles; shallow depth of field, 35mm lens look; photoreal render quality; 24 fps.",
+  "shots": [
+    {
+      "id": "s01-nucleo-abertura",
+      "chapter": "nucleo",
+      "title": "Núcleo — a esfera ATS se abre",
+      "kind": "frames",
+      "status": "ready",
+      "legacy": true,
+      "source": "produção anterior do site (public/cinematic/nucleus, 120 frames WebP 540×960)",
+      "note": "Identidade preservada: a esfera metálica com ATS em ciano que se abre e revela o núcleo de energia. Seu último quadro é a referência de cor e luz de todas as cenas novas."
+    },
+    {
+      "id": "s02-inteligencia-sinapses",
+      "chapter": "inteligencia",
+      "title": "Inteligência — sinapses de luz",
+      "kind": "loop",
+      "status": "pending",
+      "blend": "screen",
+      "opacity": 0.75,
+      "loop": true,
+      "mode": "reference",
+      "aspect": "16:9",
+      "resolution": "720P",
+      "duration": 8,
+      "objective": "Dar textura orgânica e volumétrica à rede Pessoas + IA + Engenharia que o 3D desenha: filamentos de luz que o WebGL não consegue fazer com a mesma riqueza.",
+      "goal": "Abstract filaments of light branching outward from a single hot white-cyan energy core into a delicate neural lattice, on pure black.",
+      "references": [
+        {
+          "file": "references/s01-nucleo-abertura-ultimo-quadro.png",
+          "role": "only the colour, temperature and glow of the energy core at the centre — not the metal casing, not the room"
+        }
+      ],
+      "timeline": [
+        {
+          "t": "0-2s",
+          "action": "Fine threads of cyan light creep outward from the bright core at the centre of frame, thin as hair."
+        },
+        {
+          "t": "2-5s",
+          "action": "The threads branch like synapses; small nodes ignite where they meet; a few violet and cool white threads weave between the cyan ones."
+        },
+        {
+          "t": "5-8s",
+          "action": "Soft pulses travel along the filaments toward the edges while the lattice slowly breathes back to the density of the opening second."
+        }
+      ],
+      "camera": "locked-off, extremely slow push-in (about 3% scale over the whole clip), lens centred on the core",
+      "lighting": "self-emissive only; the core is the single light source; gentle bloom; no rim lights, no environment",
+      "composition": "core exactly centred; filaments fill the central 70% and fade to black before the edges",
+      "motion": "slow, organic, constant speed; nothing enters or leaves the frame",
+      "mobile": "recorte central 9:16 feito pelo `prod:ingest` — o núcleo fica no centro seguro",
+      "transitionIn": "aparece por opacidade quando a rede 3D começa a se abrir (capítulo 2)",
+      "transitionOut": "dissolve quando a rede se recolhe para virar a casca do ecossistema",
+      "integration": "camada `screen` sobre o mundo 3D no capítulo Inteligência; o preto vira transparente"
+    },
+    {
+      "id": "s03-ecossistema-aurora",
+      "chapter": "ecossistema",
+      "title": "Ecossistema — atmosfera orbital",
+      "kind": "loop",
+      "status": "pending",
+      "blend": "screen",
+      "opacity": 0.5,
+      "loop": true,
+      "mode": "text",
+      "aspect": "16:9",
+      "resolution": "720P",
+      "duration": 10,
+      "objective": "Atmosfera volumétrica por trás das órbitas dos produtos — profundidade e escala sem disputar atenção com os painéis.",
+      "goal": "Slow ribbons of cyan and violet aurora-like light drifting through deep empty space, with very sparse glowing dust, on pure black.",
+      "timeline": [
+        {
+          "t": "0-4s",
+          "action": "Two faint ribbons of cyan light drift diagonally across the upper half of the frame, folding slowly like silk."
+        },
+        {
+          "t": "4-7s",
+          "action": "A thinner violet ribbon crosses behind them at a different depth; tiny dust motes catch the light."
+        },
+        {
+          "t": "7-10s",
+          "action": "The ribbons keep drifting at the same speed and thin out until the frame matches the opening second."
+        }
+      ],
+      "camera": "static camera, no movement",
+      "lighting": "the ribbons are the only light; soft volumetric falloff; never brighter than mid-grey",
+      "composition": "light concentrated in the upper and central area; lower third almost black (space for interface panels)",
+      "motion": "very slow, constant drift; no flashes",
+      "mobile": "recorte central 9:16",
+      "transitionIn": "entra junto com a órbita no início do capítulo 3",
+      "transitionOut": "sai quando a câmera desce para a corrente de blocos",
+      "integration": "camada `screen` atrás dos produtos, opacidade 0,5"
+    },
+    {
+      "id": "s04-inovacao-fibras",
+      "chapter": "inovacao",
+      "title": "Inovação — fibras da infraestrutura",
+      "kind": "loop",
+      "status": "pending",
+      "blend": "screen",
+      "opacity": 0.7,
+      "loop": true,
+      "mode": "text",
+      "aspect": "16:9",
+      "resolution": "720P",
+      "duration": 8,
+      "objective": "Sugerir infraestrutura própria e dados em trânsito sob a corrente de blocos — luz correndo por canais finos, em macro.",
+      "goal": "Macro view of pulses of light racing through fine parallel glass-fibre channels that recede toward a vanishing point, on pure black.",
+      "timeline": [
+        {
+          "t": "0-3s",
+          "action": "Dozens of hair-thin fibre channels lie in parallel, receding into the distance; short pulses of cyan light run along them toward the horizon."
+        },
+        {
+          "t": "3-6s",
+          "action": "Some pulses split at junctions and continue on two channels; an occasional violet pulse travels among the cyan ones."
+        },
+        {
+          "t": "6-8s",
+          "action": "The pulse rhythm stays constant and returns to the spacing of the opening second."
+        }
+      ],
+      "camera": "low angle, very slow forward dolly along the fibres, constant speed",
+      "lighting": "only the pulses emit light; fibres faintly visible where pulses pass; deep black elsewhere",
+      "composition": "vanishing point at the centre; fibres occupy the lower 60% of the frame",
+      "mobile": "recorte central 9:16",
+      "transitionIn": "aparece quando a câmera desce sob as órbitas",
+      "transitionOut": "dissolve no início do Futuro",
+      "integration": "camada `screen` sob a corrente de hashes e a árvore de Merkle"
+    },
+    {
+      "id": "s05-futuro-horizonte",
+      "chapter": "futuro",
+      "title": "Futuro — horizonte de luz",
+      "kind": "loop",
+      "status": "pending",
+      "blend": "screen",
+      "opacity": 0.8,
+      "loop": true,
+      "mode": "text",
+      "aspect": "16:9",
+      "resolution": "720P",
+      "duration": 8,
+      "objective": "Encerrar com amplitude: um horizonte de luz que nasce atrás de todo o ecossistema.",
+      "goal": "A wide dark horizon where a thin line of cyan dawn light slowly widens and brightens, with faint grid lines on an endless plane in the foreground, on pure black.",
+      "timeline": [
+        {
+          "t": "0-3s",
+          "action": "A razor-thin line of cyan light sits on the horizon in the lower third; faint perspective grid lines on the plane converge toward it."
+        },
+        {
+          "t": "3-6s",
+          "action": "The horizon glow widens gently upward with a soft violet edge above the cyan."
+        },
+        {
+          "t": "6-8s",
+          "action": "The glow settles and eases back to the width of the opening second."
+        }
+      ],
+      "camera": "static wide shot, eye level with the horizon",
+      "lighting": "only the horizon line emits; gradient falloff into black above and below",
+      "composition": "horizon at the lower third; upper two thirds stay dark for the closing headline",
+      "mobile": "recorte central 9:16",
+      "transitionIn": "entra quando a câmera recua para o plano geral do Futuro",
+      "transitionOut": "permanece até a experiência liberar a página",
+      "integration": "camada `screen` atrás do plano final e dos CTAs"
+    },
+    {
+      "id": "t01-teaser-entrada",
+      "chapter": "teaser",
+      "title": "Teaser vertical 1/3 — entrar no núcleo",
+      "kind": "film",
+      "status": "pending",
+      "mode": "first-frame",
+      "aspect": "9:16",
+      "resolution": "1080P",
+      "duration": 5,
+      "firstFrame": "references/s01-nucleo-abertura-ultimo-quadro.png",
+      "objective": "Peça para redes sociais: continua exatamente do último quadro da abertura do site.",
+      "goal": "The camera pushes straight into the blazing energy core; its light opens into a vast space of branching light filaments.",
+      "timeline": [
+        {
+          "t": "0-2s",
+          "action": "Slow push-in toward the bright core at the centre; the metal plates slide out of frame at the edges."
+        },
+        {
+          "t": "2-5s",
+          "action": "The camera passes through the light; on the other side, filaments of cyan light branch into a neural lattice around the lens, still moving forward."
+        }
+      ],
+      "camera": "single forward dolly, constant speed, centred",
+      "lighting": "the core is the light source; exposure locked even when passing through the light",
+      "composition": "vanishing point centred for the whole shot",
+      "transitionOut": "termina em movimento para frente — a próxima cena começa deste último quadro"
+    },
+    {
+      "id": "t02-teaser-ecossistema",
+      "chapter": "teaser",
+      "title": "Teaser vertical 2/3 — seis luzes em órbita",
+      "kind": "film",
+      "status": "pending",
+      "mode": "first-frame",
+      "aspect": "9:16",
+      "resolution": "1080P",
+      "duration": 5,
+      "firstFrame": "references/t01-teaser-entrada-ultimo-quadro.png",
+      "continuityFrom": [
+        {
+          "shot": "t01-teaser-entrada",
+          "file": "references/t01-teaser-entrada-ultimo-quadro.png"
+        }
+      ],
+      "objective": "A rede se organiza em seis luzes de cores distintas orbitando o núcleo — o ecossistema.",
+      "goal": "The neural lattice gathers into six small glowing spheres of distinct colours slowly orbiting a bright central core.",
+      "timeline": [
+        {
+          "t": "0-2s",
+          "action": "Continuing the same forward motion, the filaments draw together into six points of light."
+        },
+        {
+          "t": "2-5s",
+          "action": "The six lights — sky blue, cyan-green, violet-magenta, orange-amber, cyan-violet and emerald — settle into one thin elliptical orbit around the core; the camera slows and rises slightly."
+        }
+      ],
+      "camera": "forward drift slowing to a gentle rise, no rotation",
+      "lighting": "core and six spheres are the only light sources",
+      "composition": "core centred; orbit fills the central 80% of the width",
+      "transitionOut": "termina com a órbita estável vista levemente de cima"
+    },
+    {
+      "id": "t03-teaser-assinatura",
+      "chapter": "teaser",
+      "title": "Teaser vertical 3/3 — a esfera se fecha",
+      "kind": "film",
+      "status": "pending",
+      "mode": "first-last-frame",
+      "keepExistingMark": true,
+      "aspect": "9:16",
+      "resolution": "1080P",
+      "duration": 5,
+      "firstFrame": "references/t02-teaser-ecossistema-ultimo-quadro.png",
+      "lastFrame": "references/s01-nucleo-abertura-primeiro-quadro.png",
+      "continuityFrom": [
+        {
+          "shot": "t02-teaser-ecossistema",
+          "file": "references/t02-teaser-ecossistema-ultimo-quadro.png"
+        }
+      ],
+      "objective": "Fechar o teaser na assinatura: as luzes voltam ao núcleo e as placas metálicas se fecham formando a esfera ATS — o primeiro quadro do site.",
+      "goal": "The six orbiting lights spiral back into the core and the armoured metal plates close around it, sealing the metallic sphere.",
+      "timeline": [
+        {
+          "t": "0-2s",
+          "action": "The six lights spiral inward along the orbit and merge into the core."
+        },
+        {
+          "t": "2-5s",
+          "action": "Curved armoured plates slide in from the edges and lock together around the glowing core, settling into the closed sphere of the last frame."
+        }
+      ],
+      "camera": "slow pull-back that ends exactly on the framing of the provided last frame",
+      "lighting": "core glow dims as the plates close; cyan seams stay lit",
+      "composition": "sphere centred, matching the last frame",
+      "transitionOut": "termina no quadro de abertura do site — o teaser faz loop com ele"
+    }
+  ]
+}

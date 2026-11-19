@@ -43,6 +43,7 @@ const Footer = () => {
             <div>
               <h4 className="text-white text-xs font-mono uppercase tracking-wider mb-4">// SOLUÇÕES</h4>
               <ul className="space-y-2 text-sm text-gray-500">
+                <li><Link to="/#ananke" className="hover:text-[#f2c867] transition-colors">ANANKE · Beta</Link></li>
                 <li><a href="https://reencontra.atssistemas.ia.br" target="_blank" rel="noopener noreferrer" className="hover:text-neon-cyan transition-colors">Reencontra</a></li>
                 <li><a href="https://fusionbuy.atssistemas.ia.br" target="_blank" rel="noopener noreferrer" className="hover:text-neon-cyan transition-colors">Fusion Buy AI</a></li>
                 <li><a href="https://play.google.com/store/apps/details?id=com.mano.coffeebreak" target="_blank" rel="noopener noreferrer" className="hover:text-neon-cyan transition-colors">Coffee Break</a></li>

@@ -5,10 +5,27 @@ import {
   Boxes,
   Sparkles,
   Vote,
+  Infinity as InfinityIcon,
   type LucideIcon,
 } from 'lucide-react';
 
-export type ProductStatus = 'available' | 'soon';
+/**
+ * `beta` = público e instalável, mas ainda em fase de testes (ex.: APK
+ * distribuído fora da loja antes da publicação no Google Play).
+ */
+export type ProductStatus = 'available' | 'beta' | 'soon';
+
+/**
+ * Link do APK da ANANKE. Enquanto estiver `null`, o botão principal abre a
+ * versão web (que já funciona) e o site avisa que o APK vem em seguida.
+ * Para ativar o download: coloque o arquivo em `public/downloads/ananke.apk`
+ * e troque por '/downloads/ananke.apk' — ou cole aqui o link do Google Play
+ * (https://play.google.com/store/apps/details?id=com.atssistemas.ananke).
+ */
+export const ANANKE_APK_URL: string | null = null;
+
+/** Versão web (PWA) da ANANKE — no ar hoje. */
+export const ANANKE_WEB_URL = 'https://ananke-three.vercel.app';
 
 export interface ProductCTA {
   /** Visible label */
@@ -21,6 +38,8 @@ export interface ProductCTA {
   variant: 'primary' | 'ghost';
   /** Whether the link opens in a new tab. */
   external?: boolean;
+  /** Arquivo para baixar (APK): mostra ícone de download e usa o atributo `download` quando o link é do próprio site. */
+  download?: boolean;
 }
 
 export interface Product {
@@ -93,6 +112,54 @@ export const products: Product[] = [
         variant: 'primary',
         external: true,
       },
+    ],
+  },
+  {
+    id: 'ananke',
+    name: 'ANANKE',
+    category: 'Comunicação de Emergência · App Android',
+    tagline: 'Conectados. Sempre. Mesmo quando a internet cai.',
+    status: 'beta',
+    short:
+      'Rede de comunicação de emergência que funciona sem internet: mensagens cifradas passam de celular em celular, com SOS, alertas e mapa comunitário.',
+    long:
+      'Enchente, apagão, rede congestionada: é justamente quando mais precisamos falar com alguém que a internet some. A ANANKE transforma os celulares próximos numa rede própria — por Wi-Fi local e Bluetooth, sem servidor central e sem operadora. Cada mensagem é cifrada de ponta a ponta e pode saltar de aparelho em aparelho até chegar ao destino, com recibo assinado de entrega. Quando há internet, ela também sincroniza por relays abertos. Comunicação essencial gratuita, sem anúncios nas conversas e sem venda de dados.',
+    highlights: [
+      {
+        title: 'Funciona sem internet',
+        description:
+          'Celulares próximos se conectam por Wi-Fi local ou Bluetooth e repassam mensagens uns pelos outros (até 6 saltos), sem servidor nenhum.',
+      },
+      {
+        title: 'SOS e alertas com confirmação',
+        description:
+          'Pedido de ajuda com coordenadas do GPS e precisão; cada aparelho que recebe devolve uma confirmação assinada. Grupos, canais e alertas comunitários.',
+      },
+      {
+        title: 'Mapa comunitário com confiança',
+        description:
+          'Hospitais, abrigos, água, combustível e bloqueios, com regiões baixadas para uso offline — e cada informação mostra se é oficial, confirmada ou contestada.',
+      },
+    ],
+    icon: InfinityIcon,
+    // Dourado da marca ANANKE (o infinito unindo dois celulares).
+    accent: { from: '#F2C867', to: '#C48C2C', glow: 'rgba(242,200,103,0.35)' },
+    ctas: [
+      ANANKE_APK_URL
+        ? {
+            label: 'Baixar APK (Android)',
+            href: ANANKE_APK_URL,
+            variant: 'primary',
+            external: true,
+            download: true,
+          }
+        : {
+            label: 'Abrir a ANANKE',
+            href: ANANKE_WEB_URL,
+            variant: 'primary',
+            external: true,
+          },
+      { label: 'Saiba mais', href: '#ananke', variant: 'ghost' },
     ],
   },
   {
@@ -277,7 +344,7 @@ export const products: Product[] = [
   },
 ];
 
-export const availableProducts = products.filter((p) => p.status === 'available');
+export const availableProducts = products.filter((p) => p.status !== 'soon');
 export const soonProducts = products.filter((p) => p.status === 'soon');
 
 export function getProduct(id: string): Product | undefined {

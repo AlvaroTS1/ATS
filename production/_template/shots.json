@@ -1,0 +1,42 @@
+{
+  "production": "{{SLUG}}",
+  "title": "{{NOME}} — apresentação cinematográfica",
+  "site": false,
+  "budgets": { "desktopMiB": 32, "mobileMiB": 16 },
+  "creditRates": {
+    "_fonte": "Estimativa: indicador do Dreamina lido por terceiros em 2026-09-03. Confirmar no Dreamina antes de gerar.",
+    "Seedance 2.5": { "480P": 17, "720P": 37, "1080P": 91 },
+    "Seedance 2.0 Mini": { "480P": 2.5, "720P": 5 }
+  },
+  "styleLock": "SUBSTITUA por um preâmbulo de estilo em inglês, IDÊNTICO em todas as cenas: paleta com hex, tipo de luz, lente, textura, ritmo.",
+  "shots": [
+    {
+      "id": "c01-abertura",
+      "chapter": "abertura",
+      "title": "Abertura",
+      "kind": "loop",
+      "status": "pending",
+      "blend": "screen",
+      "opacity": 0.8,
+      "loop": true,
+      "mode": "text",
+      "aspect": "16:9",
+      "resolution": "720P",
+      "duration": 8,
+      "objective": "SUBSTITUA: o que esta cena comunica sobre o projeto (fato real do brief).",
+      "goal": "REPLACE: one sentence in English describing the single subject and its single continuous action, on pure black.",
+      "timeline": [
+        { "t": "0-3s", "action": "REPLACE: establishing state." },
+        { "t": "3-6s", "action": "REPLACE: the one transformation." },
+        { "t": "6-8s", "action": "REPLACE: resolved state (for a loop: back to the opening composition)." }
+      ],
+      "camera": "REPLACE: one move only (static, slow push-in, slow orbit, rise)",
+      "lighting": "REPLACE: light sources and their colours",
+      "composition": "REPLACE: where the subject sits; keep it centre-safe for the 9:16 crop",
+      "mobile": "recorte central 9:16",
+      "transitionIn": "SUBSTITUA",
+      "transitionOut": "SUBSTITUA",
+      "integration": "SUBSTITUA: onde e como entra na página"
+    }
+  ]
+}

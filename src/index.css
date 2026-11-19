@@ -267,3 +267,64 @@ body {
   animation: waitlist-panel-in 450ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+
+/* ── ATS Core Experience (src/components/experience) ───────────────────── */
+.core-journey {
+  height: calc((var(--journey) + 1) * 100vh);
+  height: calc((var(--journey) + 1) * 100svh);
+}
+.core-stage {
+  height: 100vh;
+  height: 100svh;
+}
+.core-poster {
+  object-fit: cover;
+  object-position: 50% 42%;
+}
+@media (min-aspect-ratio: 4/5) {
+  .core-poster {
+    object-fit: contain;
+    object-position: 62% 50%;
+    -webkit-mask-image: linear-gradient(90deg, transparent calc(58% - 28svh), #000 calc(58% - 18svh), #000 calc(58% + 18svh), transparent calc(58% + 28svh));
+    mask-image: linear-gradient(90deg, transparent calc(58% - 28svh), #000 calc(58% - 18svh), #000 calc(58% + 18svh), transparent calc(58% + 28svh));
+  }
+}
+.chapter-block,
+.product-panel {
+  will-change: opacity, transform;
+  text-shadow: 0 2px 24px rgba(3, 7, 18, 0.85);
+}
+.chapter-block { left: 20px; right: 20px; }
+.product-panel { left: 16px; right: 16px; bottom: calc(4svh + 30px); } /* acima do indicador de capítulo */
+.chapter-nucleo { bottom: 8svh; }
+.chapter-inteligencia { top: 16svh; }
+.chapter-ecossistema { top: 15svh; text-align: center; }
+.chapter-ecossistema p { margin-left: auto; margin-right: auto; }
+.chapter-inovacao { top: 15svh; }
+.chapter-futuro { bottom: 10svh; text-align: center; }
+.chapter-futuro p { margin-left: auto; margin-right: auto; }
+@media (min-width: 768px) {
+  .chapter-block { left: 7vw; right: auto; max-width: min(640px, 46vw); }
+  .chapter-nucleo { bottom: 12svh; max-width: min(560px, 38vw); }
+  .chapter-inteligencia { top: 30svh; }
+  .chapter-ecossistema { top: 17svh; left: 0; right: 0; margin: 0 auto; max-width: 760px; }
+  .chapter-inovacao { top: 18svh; }
+  .chapter-futuro { left: 0; right: 0; margin: 0 auto; max-width: 820px; bottom: 13svh; }
+  .product-panel { left: 7vw; right: auto; bottom: auto; top: 26svh; width: min(440px, 40vw); }
+}
+
+/* Carrosséis de deslizar no celular: sem barra de rolagem visível. */
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Toques no celular: sem o flash azul padrão do navegador — cada botão já
+   tem o próprio estado :active. */
+a,
+button {
+  -webkit-tap-highlight-color: transparent;
+}

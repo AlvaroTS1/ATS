@@ -18,6 +18,7 @@ import SectionHeading from './ui/SectionHeading';
 import StatusBadge from './ui/StatusBadge';
 import ProductCTAs from './ui/ProductCTAs';
 import ProductMicroEnvironment from './ProductMicroEnvironment';
+import AnankeShowcase from './AnankeShowcase';
 import { useReveal } from '../hooks/useReveal';
 import { REVEAL_DORMANT, revealDelay } from '../lib/reveal';
 import { cn } from '../lib/utils';
@@ -389,6 +390,7 @@ const CoffeeBreakMockup: React.FC = () => (
 );
 
 const AppsDevSection: React.FC = () => {
+  const ananke = getProduct('ananke')!;
   const reencontra = getProduct('reencontra')!;
   const fusionBuy = getProduct('fusion-buy')!;
   const coffee = getProduct('coffee-break')!;
@@ -416,7 +418,7 @@ const AppsDevSection: React.FC = () => {
               </span>
             </>
           }
-          description="Três produtos disponíveis agora — cada um resolvendo um problema real, com a mesma qualidade e identidade ATS."
+          description="Quatro produtos que você já pode usar — cada um resolvendo um problema real, com a mesma qualidade e identidade ATS."
         />
 
       </div>
@@ -424,6 +426,8 @@ const AppsDevSection: React.FC = () => {
       {/* Each product is an environment the user arrives in, not a section
           scrolled past — full viewport height, its own atmosphere filling
           the whole block (ProductMicroEnvironment, not a card border). */}
+      <AnankeShowcase product={ananke} />
+
       <div
         id="reencontra"
         className="relative scroll-mt-20 min-h-screen flex items-center overflow-hidden py-24"
