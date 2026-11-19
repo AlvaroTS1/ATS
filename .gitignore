@@ -21,7 +21,8 @@ dist-ssr
 .vscode/*
 !.vscode/extensions.json
 .idea
-.claude
+.claude/*
+!.claude/skills/
 .trae
 .DS_Store
 *.suo
@@ -30,3 +31,6 @@ dist-ssr
 *.sln
 *.sw?
 .vercel
+
+# Cinematic production: raw Dreamina downloads stay local
+production/*/raw/

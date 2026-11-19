@@ -17,6 +17,7 @@ import {
 } from '../../experience/chapters';
 import { OPENING, frameUrl, readySlots, type MediaSlot } from '../../experience/media';
 import { FootageLayer } from '../../experience/FootageLayer';
+import { ECO_TRAVEL } from '../../experience/world/layout';
 import type { CoreWorld, WorldFrame } from '../../experience/world/CoreWorld';
 import ProductCTAs from '../ui/ProductCTAs';
 import StaticExperience from './StaticExperience';
@@ -154,7 +155,7 @@ const CinematicStage: React.FC<{ onWebGLFailure: () => void }> = ({ onWebGLFailu
       const { index: focus, slice } = ecosystemFocus(eco, products.length);
       products.forEach((_, i) => {
         const panel = panelRefs.current[i];
-        const o = inEco && focus === i ? windowOpacity(slice, 0.18, 0.14, 0.32, 1) : 0;
+        const o = inEco && focus === i ? windowOpacity(slice, 0.2, 0.14, ECO_TRAVEL - 0.08, 1) : 0;
         if (panel) setLayer(panel, o, (1 - o) * 18);
         const marker = markerRefs.current[i];
         if (marker) marker.dataset.o = String(o);
@@ -187,6 +188,7 @@ const CinematicStage: React.FC<{ onWebGLFailure: () => void }> = ({ onWebGLFailu
           const src = isMobile() ? slot.mobile ?? slot.desktop : slot.desktop ?? slot.mobile;
           if (src) {
             const canWebm = !!src.webm && v.canPlayType('video/webm; codecs="vp9"') !== '';
+            if (slot.poster) v.poster = slot.poster;
             v.src = canWebm ? src.webm! : src.mp4;
           }
         }
@@ -433,7 +435,6 @@ const CinematicStage: React.FC<{ onWebGLFailure: () => void }> = ({ onWebGLFailu
             loop
             playsInline
             preload="none"
-            poster={slot.poster ?? undefined}
             className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-0"
             style={{ mixBlendMode: slot.blend === 'screen' ? 'screen' : 'normal' }}
           />

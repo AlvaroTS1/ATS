@@ -59,7 +59,7 @@ export const CHAPTERS: Chapter[] = [
     eyebrow: 'Capítulo 3 · Ecossistema',
     title: 'Não são aplicativos isolados.',
     body: 'Cada produto faz parte do ecossistema ATS — mesma qualidade, mesma identidade e evolução constante.',
-    length: 3.4,
+    length: 4.2,
   },
   {
     id: 'inovacao',

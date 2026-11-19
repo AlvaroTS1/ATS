@@ -16,6 +16,8 @@ export const ORBIT = { rx: 4.6, rz: 3.5, tilt: 0.26, y: 0 };
 export const CHAIN_Y = -7.2;
 export const CHAIN_BLOCKS = 8;
 export const CHAIN_SPACING = 1.25;
+/** Fraction of each product's slice spent flying to it (the rest is the hold where its panel reads). */
+export const ECO_TRAVEL = 0.5;
 
 const clamp01 = (t: number) => Math.min(1, Math.max(0, t));
 export const easeInOutCubic = (t: number): number =>
@@ -93,8 +95,8 @@ function chapterPose(index: number, local: number, productCount: number, aspect:
       const overview: CameraPose = { position: [3.2, 4.6, 13.2], target: [0, -0.4, 0], fov: aspect < 0.8 ? 66 : 50 };
       if (focus < 0) return overview;
       const angleAt = (k: number) => productAngle(k, productCount, local);
-      // travel in the first 40% of a slice, hold for the rest — time to read
-      const travel = easeInOutCubic(clamp01(slice / 0.4));
+      // travel in the first half of a slice, hold for the rest — time to read
+      const travel = easeInOutCubic(clamp01(slice / ECO_TRAVEL));
       const fromAngle = focus === 0 ? angleAt(0) : angleAt(focus - 1);
       const toAngle = angleAt(focus);
       const ang = focus === 0 ? toAngle : lerp(fromAngle, toAngle, travel);
@@ -144,8 +146,8 @@ function chapterPose(index: number, local: number, productCount: number, aspect:
       // Futuro — rise and pull back to see the whole: chain below, orbit, core
       const wide: CameraPose = { position: [0, -1.4, 23], target: [0, -3.2, 0], fov: 50 };
       const close: CameraPose = { position: [0, 1.4, 13.5], target: [0, -1.5, 0], fov: aspect < 0.8 ? 60 : 48 };
-      const k = easeInOutCubic(clamp01((local - 0.45) / 0.55));
-      if (local < 0.45) return wide;
+      const k = easeInOutCubic(clamp01((local - 0.55) / 0.45));
+      if (local < 0.55) return wide;
       return {
         position: lerp3(wide.position, close.position, k),
         target: lerp3(wide.target, close.target, k),
@@ -157,6 +159,8 @@ function chapterPose(index: number, local: number, productCount: number, aspect:
 
 /** Fraction of each chapter (after the first) spent blending in from the previous chapter's final pose. */
 export const CHAPTER_BLEND = 0.3;
+/** The descent to the chain and the pull-back into Futuro each cover 8–15 world units — they get a longer runway so they read as a move, not a jump. */
+const BLEND_OVERRIDE: Record<number, number> = { 3: 0.5, 4: 0.5 };
 
 /**
  * Camera pose for a global progress. Each chapter blends from where the
@@ -181,9 +185,10 @@ export function cameraPoseAt(
   const span = r.end - r.start;
   const local = span > 0 ? clamp01((p - r.start) / span) : 1;
   const pose = chapterPose(index, local, productCount, aspect);
-  if (index === 0 || local >= CHAPTER_BLEND) return pose;
+  const blend = BLEND_OVERRIDE[index] ?? CHAPTER_BLEND;
+  if (index === 0 || local >= blend) return pose;
   const prev = chapterPose(index - 1, 1, productCount, aspect);
-  const k = easeInOutCubic(local / CHAPTER_BLEND);
+  const k = easeInOutCubic(local / blend);
   return {
     position: lerp3(prev.position, pose.position, k),
     target: lerp3(prev.target, pose.target, k),
