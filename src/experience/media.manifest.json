@@ -1,0 +1,70 @@
+{
+  "production": "ats-site",
+  "note": "Gerado e atualizado por scripts/cinematic/ingest.mjs. Fonte de verdade das cenas: production/ats-site/shots.json.",
+  "slots": [
+    {
+      "id": "s01-nucleo-abertura",
+      "chapter": "nucleo",
+      "kind": "frames",
+      "status": "ready",
+      "blend": "normal",
+      "opacity": 1,
+      "frames": {
+        "base": "/cinematic/nucleus/frame-",
+        "ext": ".webp",
+        "count": 120,
+        "digits": 3,
+        "width": 540,
+        "height": 960,
+        "anchor": [
+          0.524,
+          0.443
+        ]
+      }
+    },
+    {
+      "id": "s02-inteligencia-sinapses",
+      "chapter": "inteligencia",
+      "kind": "loop",
+      "status": "pending",
+      "blend": "screen",
+      "opacity": 0.75,
+      "desktop": null,
+      "mobile": null,
+      "poster": null
+    },
+    {
+      "id": "s03-ecossistema-orbita",
+      "chapter": "ecossistema",
+      "kind": "loop",
+      "status": "pending",
+      "blend": "screen",
+      "opacity": 0.55,
+      "desktop": null,
+      "mobile": null,
+      "poster": null
+    },
+    {
+      "id": "s04-inovacao-cadeia",
+      "chapter": "inovacao",
+      "kind": "loop",
+      "status": "pending",
+      "blend": "screen",
+      "opacity": 0.7,
+      "desktop": null,
+      "mobile": null,
+      "poster": null
+    },
+    {
+      "id": "s05-futuro-horizonte",
+      "chapter": "futuro",
+      "kind": "loop",
+      "status": "pending",
+      "blend": "screen",
+      "opacity": 0.8,
+      "desktop": null,
+      "mobile": null,
+      "poster": null
+    }
+  ]
+}
