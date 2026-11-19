@@ -34,7 +34,7 @@ const roadmap: RoadmapItem[] = [
     description:
       'O que estamos criando neste momento para lançar em breve.',
     items: [
-      'ANANKE — beta aberto no Android; a caminho do Google Play',
+      'ANANKE — beta aberto na web; app Android a caminho do Google Play',
       'Fusion AI — experiência de IA imersiva',
       'Giro IA — automação inteligente de operações',
       'Evolução contínua dos produtos ativos',

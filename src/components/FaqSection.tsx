@@ -10,7 +10,7 @@ const faqs = [
   },
   {
     q: 'Os produtos já estão disponíveis?',
-    a: 'Sim. VOTRIX, Reencontra, Coffee Break e Fusion Buy AI já estão no ar e podem ser acessados agora, e a ANANKE está em beta aberto para Android. Fusion AI e Giro IA estão em desenvolvimento — você pode entrar na lista de espera para ser avisado no lançamento.',
+    a: 'Sim. VOTRIX, Reencontra, Coffee Break e Fusion Buy AI já estão no ar e podem ser acessados agora, e a ANANKE está em beta aberto. Fusion AI e Giro IA estão em desenvolvimento — você pode entrar na lista de espera para ser avisado no lançamento.',
   },
   {
     q: 'O que é o VOTRIX?',
@@ -22,11 +22,11 @@ const faqs = [
   },
   {
     q: 'Como instalo a ANANKE?',
-    a: 'Toque em "Baixar APK (Android)" na seção da ANANKE e abra o arquivo baixado. Na primeira vez, o Android pede para permitir a instalação de apps desta fonte: é só autorizar. Em breve ela estará também no Google Play.',
+    a: 'Hoje, toque em "Abrir a ANANKE" na seção dela: a versão web abre no navegador e pode ser adicionada à tela inicial. O app para Android, que conecta por Bluetooth e Wi-Fi automaticamente, chega em breve por APK e depois no Google Play.',
   },
   {
     q: 'Como faço para acessar ou baixar um produto?',
-    a: 'Cada solução tem seus próprios botões de acesso na seção "Nossas Soluções". O Coffee Break está disponível na Play Store; a ANANKE pode ser instalada pelo APK para Android; o VOTRIX, o Reencontra e o Fusion Buy AI funcionam direto pelo navegador.',
+    a: 'Cada solução tem seus próprios botões de acesso na seção "Nossas Soluções". O Coffee Break está disponível na Play Store; a ANANKE abre pelo navegador (o app Android chega em breve); o VOTRIX, o Reencontra e o Fusion Buy AI funcionam direto pelo navegador.',
   },
   {
     q: 'Como entro na lista de espera dos próximos lançamentos?',

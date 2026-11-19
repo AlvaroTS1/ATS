@@ -9,7 +9,7 @@ import {
   ShieldCheck,
   Globe,
 } from 'lucide-react';
-import type { Product } from '../data/products';
+import { ANANKE_APK_URL, ANANKE_WEB_URL, type Product } from '../data/products';
 import StatusBadge from './ui/StatusBadge';
 import ProductCTAs from './ui/ProductCTAs';
 import ProductMicroEnvironment from './ProductMicroEnvironment';
@@ -19,8 +19,6 @@ import { cn } from '../lib/utils';
 
 const GOLD = '#F2C867';
 const GOLD_DEEP = '#C48C2C';
-/** Versão web (PWA) — funciona no navegador, mas Bluetooth e Wi-Fi automático só no app. */
-const ANANKE_WEB_URL = 'https://ananke-three.vercel.app';
 
 const usePrefersReducedMotion = () => {
   const [reduced, setReduced] = useState(false);
@@ -284,18 +282,29 @@ const AnankeShowcase: React.FC<{ product: Product }> = ({ product }) => {
             </div>
 
             <ProductCTAs product={product} className="mt-9" />
-            <p className="mt-4 text-xs text-gray-500 leading-relaxed">
-              Versão beta 0.9 para Android · em breve no Google Play. Sem Android à mão?{' '}
-              <a
-                href={ANANKE_WEB_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline decoration-dotted underline-offset-2 hover:text-[#f2c867]"
-              >
-                Abra a versão web
-              </a>{' '}
-              (Bluetooth e Wi-Fi automático só no app).
-            </p>
+            {ANANKE_APK_URL ? (
+              <p className="mt-4 text-xs text-gray-500 leading-relaxed">
+                Versão beta 0.9 para Android · em breve no Google Play. Sem Android à mão?{' '}
+                <a
+                  href={ANANKE_WEB_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline decoration-dotted underline-offset-2 hover:text-[#f2c867]"
+                >
+                  Abra a versão web
+                </a>{' '}
+                (Bluetooth e Wi-Fi automático só no app).
+              </p>
+            ) : (
+              <div className="mt-5 flex items-start gap-3 rounded-xl border border-[#f2c867]/15 bg-[#f2c867]/[0.04] px-4 py-3 text-xs leading-relaxed text-gray-400">
+                <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[#f2c867] animate-pulse" />
+                <span>
+                  A versão web abre direto no navegador e pode ser adicionada à tela inicial.
+                  O <strong className="font-semibold text-[#f2c867]">app para Android</strong> (com
+                  Bluetooth e Wi-Fi automático) chega em breve — primeiro por APK, depois no Google Play.
+                </span>
+              </div>
+            )}
           </Reveal>
 
           <Reveal delayMs={180} className="lg:pl-8">
