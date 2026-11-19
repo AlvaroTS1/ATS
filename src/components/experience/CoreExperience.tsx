@@ -200,6 +200,12 @@ const CinematicStage: React.FC<{ onWebGLFailure: () => void }> = ({ onWebGLFailu
       world?.setProgress(p);
     };
 
+    // a label centred on a projected point must never spill off screen
+    const clampX = (x: number, el: HTMLElement) => {
+      const half = el.offsetWidth / 2 + 12;
+      return Math.min(stage.clientWidth - half, Math.max(half, x));
+    };
+
     // projected labels follow the 3D world every rendered frame
     const onWorldFrame = (f: WorldFrame) => {
       f.products.forEach((sp, i) => {
@@ -214,13 +220,13 @@ const CinematicStage: React.FC<{ onWebGLFailure: () => void }> = ({ onWebGLFailu
         if (!g) return;
         const o = Number(g.dataset.o || 0);
         g.style.opacity = sp.visible ? String(o) : '0';
-        if (o > 0) g.style.transform = `translate3d(${sp.x}px, ${sp.y}px, 0) translate(-50%, -140%)`;
+        if (o > 0) g.style.transform = `translate3d(${clampX(sp.x, g)}px, ${sp.y}px, 0) translate(-50%, -140%)`;
       });
       const rl = rootLabelRef.current;
       if (rl) {
         const o = Number(rl.dataset.o || 0);
         rl.style.opacity = f.chainRoot.visible ? String(o) : '0';
-        if (o > 0) rl.style.transform = `translate3d(${f.chainRoot.x}px, ${f.chainRoot.y}px, 0) translate(-50%, -260%)`;
+        if (o > 0) rl.style.transform = `translate3d(${clampX(f.chainRoot.x, rl)}px, ${f.chainRoot.y}px, 0) translate(-50%, -260%)`;
       }
     };
 

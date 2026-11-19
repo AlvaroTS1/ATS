@@ -1,3 +1,5 @@
+> **Nota (2026-11):** a abertura em produção agora é a ATS Core Experience (`src/experience/`, ver `src/experience/README.md`). Este motor de cenas e os documentos desta pasta continuam como histórico e base reaproveitável.
+
 # Scene Engine — categorias de cena
 
 O contrato `Scene` (`types.ts`) nunca menciona técnica de renderização — só
