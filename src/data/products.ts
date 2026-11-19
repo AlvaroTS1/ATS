@@ -22,7 +22,10 @@ export type ProductStatus = 'available' | 'beta' | 'soon';
  * e troque por '/downloads/ananke.apk' — ou cole aqui o link do Google Play
  * (https://play.google.com/store/apps/details?id=com.atssistemas.ananke).
  */
-export const ANANKE_APK_URL: string | null = null;
+export const ANANKE_APK_URL: string | null = '/downloads/ananke-0.9.0-beta.apk';
+
+/** O que a pessoa vê sobre o arquivo antes de baixar. */
+export const ANANKE_APK_INFO = { version: '0.9 beta', size: '6,7 MB', minAndroid: 'Android 7 ou superior' };
 
 /** Versão web (PWA) da ANANKE — no ar hoje. */
 export const ANANKE_WEB_URL = 'https://ananke-three.vercel.app';

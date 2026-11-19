@@ -9,7 +9,7 @@ import {
   ShieldCheck,
   Globe,
 } from 'lucide-react';
-import { ANANKE_APK_URL, ANANKE_WEB_URL, type Product } from '../data/products';
+import { ANANKE_APK_INFO, ANANKE_APK_URL, ANANKE_WEB_URL, type Product } from '../data/products';
 import StatusBadge from './ui/StatusBadge';
 import ProductCTAs from './ui/ProductCTAs';
 import ProductMicroEnvironment from './ProductMicroEnvironment';
@@ -283,18 +283,28 @@ const AnankeShowcase: React.FC<{ product: Product }> = ({ product }) => {
 
             <ProductCTAs product={product} className="mt-9" />
             {ANANKE_APK_URL ? (
-              <p className="mt-4 text-xs text-gray-500 leading-relaxed">
-                Versão beta 0.9 para Android · em breve no Google Play. Sem Android à mão?{' '}
-                <a
-                  href={ANANKE_WEB_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline decoration-dotted underline-offset-2 hover:text-[#f2c867]"
-                >
-                  Abra a versão web
-                </a>{' '}
-                (Bluetooth e Wi-Fi automático só no app).
-              </p>
+              <div className="mt-5 space-y-3">
+                <div className="flex flex-wrap gap-2 text-[11px]">
+                  {[`Versão ${ANANKE_APK_INFO.version}`, ANANKE_APK_INFO.size, ANANKE_APK_INFO.minAndroid, 'Grátis'].map((t) => (
+                    <span key={t} className="rounded-full border border-[#f2c867]/20 bg-[#f2c867]/[0.05] px-2.5 py-1 text-[#e9d9a8]">
+                      {t}
+                    </span>
+                  ))}
+                </div>
+                <p className="text-xs leading-relaxed text-gray-500">
+                  Ao abrir o arquivo, o Android pede para permitir a instalação desta fonte — é só
+                  autorizar. Em breve também no Google Play. Sem Android à mão?{' '}
+                  <a
+                    href={ANANKE_WEB_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline decoration-dotted underline-offset-2 hover:text-[#f2c867]"
+                  >
+                    Abra a versão web
+                  </a>{' '}
+                  (Bluetooth e Wi-Fi automático só no app).
+                </p>
+              </div>
             ) : (
               <div className="mt-5 flex items-start gap-3 rounded-xl border border-[#f2c867]/15 bg-[#f2c867]/[0.04] px-4 py-3 text-xs leading-relaxed text-gray-400">
                 <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[#f2c867] animate-pulse" />
