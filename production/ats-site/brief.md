@@ -14,11 +14,12 @@ Nada do que for dito ou mostrado pode ir além disto:
 | Fato | Fonte no código |
 |---|---|
 | ATS Sistemas de Automações, CNPJ 65.402.484/0001-40, Espumoso/RS | `index.html`, `Footer.tsx` |
-| Ecossistema de 6 produtos: 4 disponíveis, 2 em construção | `src/data/products.ts` |
+| Ecossistema de 7 produtos: 4 disponíveis, 1 em beta aberto (ANANKE), 2 em construção | `src/data/products.ts` |
 | VOTRIX: cédula cifrada no aparelho, credencial única e anônima, votos selados num quadro público encadeado por hashes, raízes de Merkle carimbadas no Bitcoin | `products.ts` (votrix) |
 | Reencontra: QR Codes de proteção familiar, localização em tempo real, SOS com biometria | `products.ts` (reencontra) |
 | Fusion Buy AI: assistente de compras conversacional | `products.ts` (fusion-buy) |
 | Coffee Break: app Android publicado na Play Store | `products.ts` (coffee-break) |
+| ANANKE: comunicação de emergência sem internet (Wi-Fi local e Bluetooth, mensagens cifradas de aparelho em aparelho, SOS, mapa comunitário); beta por APK, a caminho do Google Play | `products.ts` (ananke) |
 | Fusion AI e Giro IA: em construção, com lista de espera | `products.ts`, `RoadmapSection.tsx` |
 | Serviços: apps móveis, agentes de IA, chatbots, automação de processos, plataformas web e SaaS, soluções sob medida | `ServicesSection.tsx` |
 | Valores: confiança, inteligência aplicada ("IA para resolver problemas concretos, não para parecer moderna"), ecossistema integrado | `AboutSection.tsx` |

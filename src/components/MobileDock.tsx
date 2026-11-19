@@ -26,7 +26,8 @@ const TRACKED = ['home', 'solutions', 'ananke', 'contact'];
 /**
  * Barra de navegação flutuante, só no celular — ao alcance do polegar, como
  * num app. Some enquanto a pessoa rola para baixo (a cena fica livre, sem
- * interface na frente) e volta ao rolar para cima ou ao parar.
+ * interface na frente) e volta ao rolar para cima ou ao parar. Durante a
+ * jornada 3D do topo ela fica guardada.
  */
 const MobileDock: React.FC = () => {
   const [hidden, setHidden] = useState(true);
@@ -44,13 +45,20 @@ const MobileDock: React.FC = () => {
       const goingUp = y < lastY.current - 4;
       lastY.current = y;
 
-      if (y < 80) setHidden(true);
+      // Dentro da jornada 3D a cena tem a própria interface (painéis,
+      // indicador de capítulo): a barra só aparece depois que ela termina.
+      const journey = document.getElementById('home');
+      const inJourney = journey ? journey.getBoundingClientRect().bottom > window.innerHeight + 4 : y < 80;
+
+      if (inJourney) setHidden(true);
       else if (goingDown) setHidden(true);
       else if (goingUp) setHidden(false);
 
       if (idleTimer.current !== null) window.clearTimeout(idleTimer.current);
       idleTimer.current = window.setTimeout(() => {
-        if (window.scrollY >= 80) setHidden(false);
+        const j = document.getElementById('home');
+        const stillInJourney = j ? j.getBoundingClientRect().bottom > window.innerHeight + 4 : window.scrollY < 80;
+        if (!stillInJourney) setHidden(false);
       }, 700);
 
       // Seção ativa: a última cujo topo já passou de 40% da tela.

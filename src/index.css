@@ -295,7 +295,7 @@ body {
   text-shadow: 0 2px 24px rgba(3, 7, 18, 0.85);
 }
 .chapter-block { left: 20px; right: 20px; }
-.product-panel { left: 16px; right: 16px; bottom: 4svh; }
+.product-panel { left: 16px; right: 16px; bottom: calc(4svh + 30px); } /* acima do indicador de capítulo */
 .chapter-nucleo { bottom: 8svh; }
 .chapter-inteligencia { top: 16svh; }
 .chapter-ecossistema { top: 15svh; text-align: center; }

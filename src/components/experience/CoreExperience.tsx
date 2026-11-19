@@ -20,6 +20,7 @@ import { FootageLayer } from '../../experience/FootageLayer';
 import { ECO_TRAVEL } from '../../experience/world/layout';
 import type { CoreWorld, WorldFrame } from '../../experience/world/CoreWorld';
 import ProductCTAs from '../ui/ProductCTAs';
+import StatusBadge from '../ui/StatusBadge';
 import StaticExperience from './StaticExperience';
 import { cn } from '../../lib/utils';
 
@@ -89,6 +90,9 @@ const CinematicStage: React.FC<{ onWebGLFailure: () => void }> = ({ onWebGLFailu
   const railRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const barRef = useRef<HTMLDivElement>(null);
   const cueRef = useRef<HTMLDivElement>(null);
+  const chipRef = useRef<HTMLDivElement>(null);
+  const chipDotRef = useRef<HTMLSpanElement>(null);
+  const chipTextRef = useRef<HTMLSpanElement>(null);
   const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({});
   const progressRef = useRef(0);
 
@@ -118,6 +122,22 @@ const CinematicStage: React.FC<{ onWebGLFailure: () => void }> = ({ onWebGLFailu
       footage.draw(0, 1);
       if (posterRef.current) posterRef.current.style.opacity = '0';
     });
+
+    // Toque háptico curtíssimo a cada novo capítulo ou produto em foco
+    // (Android; o iPhone ignora `vibrate`). Nunca no primeiro quadro.
+    const canBuzz = typeof navigator.vibrate === 'function' && window.matchMedia('(pointer: coarse)').matches;
+    let lastBeat = '';
+    const beat = (key: string) => {
+      if (key === lastBeat) return;
+      const first = lastBeat === '';
+      lastBeat = key;
+      if (first || !canBuzz) return;
+      try {
+        navigator.vibrate(10);
+      } catch {
+        /* sem gesto do usuário ainda: o navegador recusa, sem problema */
+      }
+    };
 
     // ── per-progress DOM: chapters, panels, rail ──
     const applyProgress = (p: number) => {
@@ -175,6 +195,18 @@ const CinematicStage: React.FC<{ onWebGLFailure: () => void }> = ({ onWebGLFailu
         else b.removeAttribute('aria-current');
       });
       if (barRef.current) barRef.current.style.transform = `scaleX(${p})`;
+
+      // Celular: onde estou na jornada (capítulo, ou o produto em foco).
+      const focused = inEco && focus >= 0 ? products[focus] : null;
+      beat(focused ? `p-${focused.id}` : `c-${current}`);
+      if (chipTextRef.current) {
+        const text = focused
+          ? `${String(current + 1).padStart(2, '0')} · ${focused.name}`
+          : `${String(current + 1).padStart(2, '0')} / ${String(CHAPTERS.length).padStart(2, '0')} · ${CHAPTERS[current].label}`;
+        if (chipTextRef.current.textContent !== text) chipTextRef.current.textContent = text;
+      }
+      if (chipDotRef.current) chipDotRef.current.style.backgroundColor = focused ? focused.accent.from : '#29ABE2';
+      if (chipRef.current) chipRef.current.style.opacity = p > 0.02 && p < 0.985 ? '1' : '0';
       if (cueRef.current) cueRef.current.style.opacity = p < 0.02 ? String(1 - p / 0.02) : '0';
 
       // Dreamina layers: only near their chapter are they even loaded
@@ -264,7 +296,33 @@ const CinematicStage: React.FC<{ onWebGLFailure: () => void }> = ({ onWebGLFailu
       applyPin();
       applyProgress(smoothed);
     };
+    // Giroscópio (Android): inclinar o celular move a câmera dentro do
+    // mundo, como olhar ao redor. O iPhone exigiria um diálogo de permissão
+    // — que quebraria a imersão —, então lá a câmera segue o toque.
+    let gyroActive = false;
+    let baseBeta: number | null = null;
+    let baseGamma: number | null = null;
+    const clampUnit = (v: number) => Math.max(-1, Math.min(1, v));
+    const onOrientation = (e: DeviceOrientationEvent) => {
+      if (e.beta === null || e.gamma === null) return;
+      if (baseBeta === null || baseGamma === null) {
+        baseBeta = e.beta;
+        baseGamma = e.gamma;
+      }
+      gyroActive = true;
+      world?.setPointer(clampUnit((e.gamma - baseGamma) / 16), clampUnit(-(e.beta - baseBeta) / 16));
+      // a postura "neutra" acompanha devagar quem muda o jeito de segurar
+      baseBeta += (e.beta - baseBeta) * 0.004;
+      baseGamma += (e.gamma - baseGamma) * 0.004;
+    };
+    const DOE = window.DeviceOrientationEvent as
+      | (typeof DeviceOrientationEvent & { requestPermission?: unknown })
+      | undefined;
+    const useGyro = Boolean(DOE) && typeof DOE?.requestPermission !== 'function' && window.matchMedia('(pointer: coarse)').matches;
+    if (useGyro) window.addEventListener('deviceorientation', onOrientation);
+
     const onPointer = (e: PointerEvent) => {
+      if (gyroActive && e.pointerType !== 'mouse') return;
       world?.setPointer((e.clientX / window.innerWidth) * 2 - 1, -((e.clientY / window.innerHeight) * 2 - 1));
     };
 
@@ -313,6 +371,7 @@ const CinematicStage: React.FC<{ onWebGLFailure: () => void }> = ({ onWebGLFailu
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onResize);
       window.removeEventListener('pointermove', onPointer);
+      window.removeEventListener('deviceorientation', onOrientation);
       if (easeRaf !== null) cancelAnimationFrame(easeRaf);
       io.disconnect();
       footage.cancel();
@@ -538,16 +597,7 @@ const CinematicStage: React.FC<{ onWebGLFailure: () => void }> = ({ onWebGLFailu
                   <p className="text-[10px] font-semibold uppercase tracking-[0.18em] md:text-[11px]" style={{ color: p.accent.from }}>
                     {p.category}
                   </p>
-                  <span
-                    className={cn(
-                      'shrink-0 rounded-full border px-2.5 py-0.5 text-[10px] font-semibold',
-                      p.status === 'available'
-                        ? 'border-cyber-emerald/30 bg-cyber-emerald/10 text-cyber-emerald'
-                        : 'border-amber-300/30 bg-amber-300/10 text-amber-200',
-                    )}
-                  >
-                    {p.status === 'available' ? 'Disponível' : 'Em construção'}
-                  </span>
+                  <StatusBadge status={p.status} className="shrink-0" />
                 </div>
                 <h3 className="mt-2 text-2xl font-black tracking-tight text-white md:text-3xl">{p.name}</h3>
                 <p className="mt-1 text-sm font-medium text-gray-200">{p.tagline}</p>
@@ -591,6 +641,18 @@ const CinematicStage: React.FC<{ onWebGLFailure: () => void }> = ({ onWebGLFailu
             ))}
           </ol>
         </nav>
+
+        {/* mobile: capítulo / produto atual */}
+        <div
+          ref={chipRef}
+          aria-hidden="true"
+          className="absolute bottom-4 left-1/2 z-20 -translate-x-1/2 opacity-0 transition-opacity duration-500 md:hidden"
+        >
+          <div className="flex items-center gap-2 whitespace-nowrap rounded-full border border-white/10 bg-space-black/60 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-300 backdrop-blur-md">
+            <span ref={chipDotRef} className="h-1.5 w-1.5 rounded-full shadow-[0_0_8px_currentColor]" style={{ backgroundColor: '#29ABE2' }} />
+            <span ref={chipTextRef} />
+          </div>
+        </div>
 
         {/* mobile progress */}
         <div aria-hidden="true" className="absolute inset-x-0 bottom-0 z-20 h-[2px] bg-white/5 md:hidden">

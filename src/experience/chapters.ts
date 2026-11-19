@@ -28,6 +28,7 @@ export interface Chapter {
 /** Product order inside the Ecossistema chapter — available first, in-construction last. */
 export const ECOSYSTEM_ORDER = [
   'votrix',
+  'ananke',
   'reencontra',
   'fusion-buy',
   'coffee-break',
@@ -41,7 +42,7 @@ export const CHAPTERS: Chapter[] = [
     label: 'Núcleo',
     eyebrow: 'ATS Sistemas de Automações',
     title: 'Tecnologia que resolve problemas reais.',
-    body: 'Um ecossistema de software inteligente construído pela ATS: produtos próprios, da proteção familiar à votação verificável e aos assistentes de IA.',
+    body: 'Um ecossistema de software inteligente construído pela ATS: produtos próprios, da comunicação de emergência sem internet à votação verificável e aos assistentes de IA.',
     length: 1.6,
   },
   {
@@ -59,7 +60,8 @@ export const CHAPTERS: Chapter[] = [
     eyebrow: 'Capítulo 3 · Ecossistema',
     title: 'Não são aplicativos isolados.',
     body: 'Cada produto faz parte do ecossistema ATS — mesma qualidade, mesma identidade e evolução constante.',
-    length: 4.2,
+    // 7 produtos: ~0,6 tela de rolagem para cada visita, como era com 6.
+    length: 4.8,
   },
   {
     id: 'inovacao',

@@ -1,12 +1,12 @@
 # Roteiro — ATS Core Experience
 
-A duração é medida em **telas de rolagem** (altura da viewport) e é a mesma em qualquer aparelho. Total: 10,3 telas. A fonte de verdade é `src/experience/chapters.ts`.
+A duração é medida em **telas de rolagem** (altura da viewport) e é a mesma em qualquer aparelho. Total: 10,9 telas. A fonte de verdade é `src/experience/chapters.ts`.
 
 | # | Capítulo | Duração | Objetivo | Imagem (3D + vídeo) | Texto (DOM) | Transição de saída |
 |---|---|---|---|---|---|---|
 | 1 | **Núcleo** | 1,6 | Impacto imediato e identidade | A esfera ATS (filmagem s01) se abre; push-in; o núcleo 3D aparece exatamente onde estava o núcleo filmado | H1 "Tecnologia que resolve problemas reais." + CTAs | A filmagem se dissolve no núcleo 3D, alinhado ao pixel |
 | 2 | **Inteligência** | 1,5 | Pessoas + IA + engenharia | Três aglomerados de nós (branco/ciano/violeta) saem do núcleo e se fundem numa rede; sinais percorrem as arestas; o cursor ilumina os nós próximos | "Pessoas, IA e engenharia — uma só rede." + rótulos projetados nos aglomerados | A rede se contrai e vira a casca do núcleo |
-| 3 | **Ecossistema** | 4,2 | Os 6 produtos reais | A órbita se desenha; a câmera visita cada produto; uma linha de energia liga o núcleo ao produto em foco | Intro + um painel por produto (dados e links de `products.ts`) | A câmera desce abaixo da órbita |
+| 3 | **Ecossistema** | 4,8 | Os 7 produtos reais | A órbita se desenha; a câmera visita cada produto; uma linha de energia liga o núcleo ao produto em foco | Intro + um painel por produto (dados e links de `products.ts`) | A câmera desce abaixo da órbita |
 | 4 | **Inovação** | 1,7 | Desenvolvimento próprio, com prova | Os blocos se selam um a um; a árvore de Merkle sobe até a raiz; o feixe vai ao anel de ancoragem | "Tecnologia construída por dentro." + legenda projetada "Raiz de Merkle · carimbo no Bitcoin" | A câmera sobe e recua |
 | 5 | **Futuro** | 1,3 | Visão e convite | Plano geral de tudo aceso; aproximação final ao núcleo com a órbita completa | "O próximo produto já está a caminho." + "Conhecer os projetos" / "Falar com a ATS" | O pin se solta e entram as seções do site |
 

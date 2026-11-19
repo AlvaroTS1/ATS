@@ -85,6 +85,11 @@ export class CoreWorld {
 
   private progress = 0;
   private pointer = new THREE.Vector2(0, 0);
+  /** Velocidade da jornada, suavizada: 0 parado, 1 rolagem rápida. */
+  private warp = 0;
+  private warpSign = 1;
+  private prevProgress = -1;
+  private warpSpin = 0;
   private pointerEased = new THREE.Vector2(0, 0);
   private width = 1;
   private height = 1;
@@ -734,24 +739,44 @@ export class CoreWorld {
     // pointer eases — the world has mass
     this.pointerEased.lerp(this.pointer, 1 - Math.pow(0.001, dt));
 
+    // Velocidade da jornada → "impulso": a rolagem rápida abre a lente,
+    // inclina a câmera na curva, acelera a poeira e acende o bloom. Parar
+    // devolve tudo devagar — é isso que dá a sensação de massa e de
+    // estar viajando por um lugar, e não de rolar uma página.
+    if (this.prevProgress < 0) this.prevProgress = p;
+    const speed = dt > 0 ? (p - this.prevProgress) / dt : 0;
+    this.prevProgress = p;
+    // saltos de âncora (snap) não são viagem: ignorados
+    const warpTarget = Math.abs(speed) > 2 ? 0 : clamp01(Math.abs(speed) / 0.22);
+    const warpRate = warpTarget > this.warp ? 1 - Math.pow(0.004, dt) : 1 - Math.pow(0.15, dt);
+    this.warp += (warpTarget - this.warp) * warpRate;
+    if (Math.abs(speed) > 0.01) this.warpSign = Math.sign(speed);
+    const warp = this.warp;
+
     // camera
     const pose = cameraPoseAt(p, this.products.length, CHAPTER_RANGES, this.width / this.height);
     const right = this.tmp.set(1, 0, 0);
+    // respiração: um micro-balanço contínuo, como uma câmera na mão
+    const breathe = Math.sin(time * 0.55) * 0.035;
     this.camera.position.set(
-      pose.position[0] + this.pointerEased.x * 0.35 * right.x,
-      pose.position[1] + this.pointerEased.y * 0.22,
+      pose.position[0] + this.pointerEased.x * 0.35 * right.x + Math.sin(time * 0.37) * 0.025,
+      pose.position[1] + this.pointerEased.y * 0.22 + breathe,
       pose.position[2],
     );
     this.camera.lookAt(pose.target[0], pose.target[1], pose.target[2]);
-    if (Math.abs(this.camera.fov - pose.fov) > 0.01) {
-      this.camera.fov = pose.fov;
+    // inclinação na curva: segue o ponteiro/giroscópio e a direção da viagem
+    this.camera.rotateZ(-this.pointerEased.x * 0.035 + this.warpSign * warp * 0.025);
+    const fov = pose.fov + warp * 9;
+    if (Math.abs(this.camera.fov - fov) > 0.01) {
+      this.camera.fov = fov;
       this.camera.updateProjectionMatrix();
       this.updatePointScale();
     }
 
-    // stars & dust: always alive
-    this.stars.rotation.y = time * 0.004 + p * 0.6;
-    this.dust.rotation.y = -time * 0.01;
+    // stars & dust: always alive — e correm junto com a viagem
+    this.warpSpin += dt * warp * this.warpSign;
+    this.stars.rotation.y = time * 0.004 + p * 0.6 + this.warpSpin * 0.05;
+    this.dust.rotation.y = -time * 0.01 - this.warpSpin * 0.35;
     this.stars.material.uniforms.uTime.value = time;
     this.dust.material.uniforms.uTime.value = time;
 
@@ -908,7 +933,7 @@ export class CoreWorld {
 
     // render
     if (this.composer) {
-      if (this.bloom) this.bloom.strength = 0.65 + finale * 0.3;
+      if (this.bloom) this.bloom.strength = 0.65 + finale * 0.3 + this.warp * 0.35;
       this.composer.render();
     } else {
       this.renderer.render(this.scene, this.camera);
