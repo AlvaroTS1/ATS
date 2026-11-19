@@ -1,6 +1,7 @@
 import React, { Suspense, lazy, useEffect } from 'react';
 import Header from '../components/Header';
 import CinematicExperience from '../components/CinematicExperience';
+import MobileDock from '../components/MobileDock';
 
 /**
  * Below-the-fold sections, lazy by construction.
@@ -80,10 +81,11 @@ const HomeLanding: React.FC = () => {
           <h1>Tecnologia que resolve problemas reais.</h1>
           <p>
             A ATS Sistemas de Automações reúne, em um só ecossistema, produtos
-            que resolvem problemas reais — de proteção familiar a assistentes
-            de IA.
+            que resolvem problemas reais — de comunicação de emergência sem
+            internet a assistentes de IA.
           </p>
           <a href="https://votrix.atssistemas.ia.br">Conheça o VOTRIX: votação digital verificável</a>
+          <a href="#ananke">Conheça a ANANKE: comunicação de emergência sem internet</a>
           <a href="#solutions">Explorar soluções</a>
           <a href="#contact">Falar com a ATS</a>
         </div>
@@ -115,6 +117,9 @@ const HomeLanding: React.FC = () => {
       <Suspense fallback={null}>
         <Footer />
       </Suspense>
+      {/* Espaço para a barra flutuante não cobrir o fim do rodapé no celular. */}
+      <div aria-hidden="true" className="h-24 md:hidden" />
+      <MobileDock />
     </div>
   );
 };

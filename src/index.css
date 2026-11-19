@@ -267,3 +267,19 @@ body {
   animation: waitlist-panel-in 450ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+
+/* Carrosséis de deslizar no celular: sem barra de rolagem visível. */
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Toques no celular: sem o flash azul padrão do navegador — cada botão já
+   tem o próprio estado :active. */
+a,
+button {
+  -webkit-tap-highlight-color: transparent;
+}

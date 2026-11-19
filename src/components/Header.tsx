@@ -39,14 +39,15 @@ const Header = () => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 30);
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navLinks = [
+  const navLinks: { name: string; href: string; highlight?: boolean; gold?: boolean }[] = [
     { name: 'Início', href: '#home' },
     { name: 'VOTRIX', href: 'https://votrix.atssistemas.ia.br', highlight: true },
     { name: 'Soluções', href: '#solutions' },
+    { name: 'ANANKE', href: '#ananke', gold: true },
     { name: 'Roadmap', href: '#roadmap' },
     { name: 'Sobre', href: '#about' },
     { name: 'Contato', href: '#contact' },
@@ -114,7 +115,11 @@ const Header = () => {
                 rel={link.highlight ? 'noopener noreferrer' : undefined}
                 className={cn(
                   'text-xs font-semibold uppercase tracking-wider transition-colors relative py-2 group',
-                  link.highlight ? 'text-cyan-300 hover:text-emerald-300 flex items-center gap-1.5' : 'text-gray-400 hover:text-neon-cyan',
+                  link.highlight
+                    ? 'text-cyan-300 hover:text-emerald-300 flex items-center gap-1.5'
+                    : link.gold
+                      ? 'text-[#f2c867] hover:text-[#fff1c4]'
+                      : 'text-gray-400 hover:text-neon-cyan',
                 )}
               >
                 {link.highlight && <VotrixMark className="h-4 w-4" />}
@@ -134,6 +139,8 @@ const Header = () => {
           <button
             className="md:hidden p-2 text-gray-300 hover:text-neon-cyan transition-colors rounded-xl bg-white/5 border border-white/10"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label={isMenuOpen ? 'Fechar menu' : 'Abrir menu'}
+            aria-expanded={isMenuOpen}
           >
             {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
@@ -159,13 +166,18 @@ const Header = () => {
                 rel={link.highlight ? 'noopener noreferrer' : undefined}
                 className={cn(
                   'text-sm font-medium py-2.5 border-b border-white/5 transition-colors flex items-center gap-2',
-                  link.highlight ? 'text-cyan-300 font-bold' : 'text-gray-400 hover:text-neon-cyan',
+                  link.highlight
+                    ? 'text-cyan-300 font-bold'
+                    : link.gold
+                      ? 'text-[#f2c867] font-bold'
+                      : 'text-gray-400 hover:text-neon-cyan',
                 )}
                 onClick={() => setIsMenuOpen(false)}
               >
                 {link.highlight && <VotrixMark className="h-4 w-4" />}
                 {link.name}
                 {link.highlight && <span className="ml-auto text-[10px] font-semibold uppercase tracking-wider text-emerald-300">Novo</span>}
+                {link.gold && <span className="ml-auto text-[10px] font-semibold uppercase tracking-wider text-[#f2c867]/80">Beta</span>}
               </a>
             ))}
             <a
@@ -182,4 +194,4 @@ const Header = () => {
   );
 };
 
-export default Header;
+export default Header;

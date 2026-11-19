@@ -5,6 +5,7 @@ import { AmbientLayer } from '../cinematic/shared/AmbientLayer';
 import { cinematicEvents } from '../cinematic/EventBus';
 import { intToRgb } from '../cinematic/shared/colorLerp';
 import { getDeviceTier } from '../lib/deviceTier';
+import { useSceneTilt } from '../hooks/useSceneTilt';
 import HologramConsole from './cinematic-overlays/HologramConsole';
 import HeroHUD from './cinematic-overlays/HeroHUD';
 import FilmGrain from './cinematic-overlays/FilmGrain';
@@ -24,7 +25,8 @@ const MOBILE_BREAKPOINT_PX = 768;
  * three installations (below) and the Hero HUD's arrival enough room each,
  * without the old multi-scene total (7400px mobile).
  */
-const PIN_DISTANCE = 3200;
+// 4 instalações: ~680px de rolagem para cada uma (eram 3 com ~700px).
+const PIN_DISTANCE = 4000;
 
 const GUARDIAN_VIDEO = '/cinematic/guardian/guardian.mp4';
 
@@ -48,9 +50,11 @@ interface Sector {
  * rather than a measurement.
  */
 const SECTORS: ReadonlyArray<Sector> = [
-  { productId: 'fusion-buy', anchor: { x: 0.24, y: 0.5 }, from: 0.14, to: 0.36 },
-  { productId: 'reencontra', anchor: { x: 0.5, y: 0.5 }, from: 0.38, to: 0.6 },
-  { productId: 'coffee-break', anchor: { x: 0.76, y: 0.5 }, from: 0.62, to: 0.84 },
+  // ANANKE abre a jornada, no centro do quadro: é o lançamento mais novo.
+  { productId: 'ananke', anchor: { x: 0.5, y: 0.5 }, from: 0.1, to: 0.27 },
+  { productId: 'fusion-buy', anchor: { x: 0.24, y: 0.5 }, from: 0.29, to: 0.46 },
+  { productId: 'reencontra', anchor: { x: 0.5, y: 0.5 }, from: 0.48, to: 0.65 },
+  { productId: 'coffee-break', anchor: { x: 0.76, y: 0.5 }, from: 0.67, to: 0.84 },
 ];
 
 /** Fraction of a sector's window spent waking, and again spent returning to standby. */
@@ -230,6 +234,9 @@ const CinematicExperience: React.FC = () => {
     };
   }, [prefersReducedMotion]);
 
+  // Paralaxe: inclinar o celular (ou mover o mouse) desloca a cena de leve.
+  useSceneTilt(pinRef, !prefersReducedMotion);
+
   if (prefersReducedMotion) {
     // Respect the user's preference: a static frame, normal (non-pinned) height.
     return (
@@ -266,7 +273,12 @@ const CinematicExperience: React.FC = () => {
           muted
           playsInline
           preload="auto"
-          className="absolute inset-0 z-0 h-full w-full object-cover"
+          className="absolute inset-0 z-0 h-full w-full object-cover will-change-transform"
+          style={{
+            // Escala 1.06 dá margem para o deslocamento nunca mostrar borda.
+            transform:
+              'translate3d(calc(var(--tilt-x, 0) * -14px), calc(var(--tilt-y, 0) * -10px), 0) scale(1.06)',
+          }}
         />
 
         {/* Always breathing, independent of scroll — see AmbientLayer.ts */}

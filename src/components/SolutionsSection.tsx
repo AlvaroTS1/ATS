@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Layers, Plus, ArrowRight } from 'lucide-react';
+import { Layers, Plus, ArrowRight, Hand } from 'lucide-react';
 import { products, type Product } from '../data/products';
 import SectionHeading from './ui/SectionHeading';
 import StatusBadge from './ui/StatusBadge';
@@ -17,7 +17,8 @@ const ProductCard: React.FC<{ product: Product; index: number }> = ({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-60px' }}
       transition={{ duration: 0.5, delay: (index % 3) * 0.08 }}
-      className="group relative flex flex-col rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6 md:p-7 overflow-hidden transition-all duration-500 hover:-translate-y-1.5 hover:border-white/20"
+      className="group relative flex flex-col rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6 md:p-7 overflow-hidden transition-all duration-500 hover:-translate-y-1.5 hover:border-white/20 snap-center shrink-0 w-[86%] sm:w-[64%] md:w-auto"
+      style={{ boxShadow: `inset 0 1px 0 ${product.accent.from}14` }}
     >
       {/* Accent glow on hover */}
       <div
@@ -77,7 +78,7 @@ const FutureCard: React.FC = () => (
     whileInView={{ opacity: 1, y: 0 }}
     viewport={{ once: true }}
     transition={{ duration: 0.5, delay: 0.1 }}
-    className="group relative flex flex-col items-center justify-center rounded-2xl border border-dashed border-white/10 bg-white/[0.01] p-8 text-center min-h-[220px] transition-colors hover:border-neon-cyan/30"
+    className="group relative flex flex-col items-center justify-center rounded-2xl border border-dashed border-white/10 bg-white/[0.01] p-8 text-center min-h-[220px] transition-colors hover:border-neon-cyan/30 snap-center shrink-0 w-[86%] sm:w-[64%] md:w-auto"
   >
     <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] text-gray-500 group-hover:text-neon-cyan transition-colors">
       <Plus className="h-6 w-6" />
@@ -96,6 +97,16 @@ const FutureCard: React.FC = () => (
 );
 
 const SolutionsSection: React.FC = () => {
+  // Progresso do carrossel no celular (no desktop é uma grade comum).
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [progress, setProgress] = useState(0);
+  const onTrackScroll = () => {
+    const el = trackRef.current;
+    if (!el) return;
+    const max = el.scrollWidth - el.clientWidth;
+    setProgress(max > 0 ? el.scrollLeft / max : 0);
+  };
+
   return (
     <section
       id="solutions"
@@ -118,11 +129,28 @@ const SolutionsSection: React.FC = () => {
           description="Não são aplicativos isolados: cada produto faz parte do ecossistema ATS — mesma qualidade, mesma identidade e evolução constante. Um resolve o seu problema hoje; o próximo já está a caminho."
         />
 
-        <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div
+          ref={trackRef}
+          onScroll={onTrackScroll}
+          className="mt-12 md:mt-16 -mx-4 px-4 flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-none overscroll-x-contain md:mx-0 md:px-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 md:overflow-visible"
+        >
           {products.map((product, i) => (
             <ProductCard key={product.id} product={product} index={i} />
           ))}
           <FutureCard />
+        </div>
+
+        {/* Só no celular: barra de progresso + dica de gesto. */}
+        <div className="md:hidden mt-5 flex items-center gap-3 px-1">
+          <div className="relative h-1 flex-1 overflow-hidden rounded-full bg-white/10">
+            <div
+              className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-neon-cyan to-cyber-purple"
+              style={{ width: `${Math.max(12, progress * 100)}%` }}
+            />
+          </div>
+          <span className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-gray-500">
+            <Hand className="h-3.5 w-3.5" /> Deslize
+          </span>
         </div>
       </div>
     </section>

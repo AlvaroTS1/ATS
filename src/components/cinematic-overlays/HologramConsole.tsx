@@ -100,6 +100,24 @@ const HologramConsole: React.FC = () => {
   const product = productId ? getProduct(productId) : null;
   const awake = wake > STANDBY_UNTIL;
 
+  // Um toque háptico curtíssimo quando uma instalação acende (Android; o
+  // iPhone ignora `vibrate`). Só uma vez por instalação a cada passagem,
+  // nunca com movimento reduzido.
+  const lastBuzzRef = useRef<string | null>(null);
+  useEffect(() => {
+    const id = awake ? (product?.id ?? null) : null;
+    if (id === lastBuzzRef.current) return;
+    lastBuzzRef.current = id;
+    if (!id || typeof navigator.vibrate !== 'function') return;
+    if (!window.matchMedia('(pointer: coarse)').matches) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    try {
+      navigator.vibrate(12);
+    } catch {
+      /* sem gesto do usuário ainda: o navegador recusa, sem problema */
+    }
+  }, [product, awake]);
+
   useEffect(() => {
     // The whole environment leans toward whichever installation is awake —
     // `AmbientLayer`'s dust and glow lerp to this colour (via the host), so
@@ -144,6 +162,10 @@ const HologramConsole: React.FC = () => {
               // and position never change — the console does not grow into
               // existence, it lights up (see `lib/reveal.ts`).
               opacity: 0.24 + wake * 0.76,
+              // Holograma com profundidade: gira alguns graus contra a
+              // inclinação do aparelho/mouse (variáveis de useSceneTilt).
+              transform:
+                'perspective(900px) rotateY(calc(var(--tilt-x, 0) * 7deg)) rotateX(calc(var(--tilt-y, 0) * -6deg)) translate3d(calc(var(--tilt-x, 0) * 10px), calc(var(--tilt-y, 0) * 8px), 0)',
             }}
           >
             {/* Corner brackets: the footage's own HUD detail, and here the
