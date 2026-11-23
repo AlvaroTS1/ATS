@@ -1,36 +1,59 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, MapPin, Send, Loader2, CheckCircle, XCircle, Terminal, Cpu } from 'lucide-react';
+import { WhatsAppIcon } from './WhatsAppButton';
+import { EMAIL_FALLBACK_URL, LEAD_WEBHOOK_URL, WHATSAPP_NUMERO, whatsappLink } from '../lib/contato';
 
 const ContactSection = () => {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [viaWhatsapp, setViaWhatsapp] = useState(false);
+  const [aceite, setAceite] = useState(false);
 
-  // Usando o FormSubmit.co para envio sem backend
+  // O lead vai para o CRM da ATS (n8n). Com o aceite, a IA comercial já responde no WhatsApp.
+  // Se o webhook falhar, o formulário cai para o e-mail (FormSubmit) para não perder o contato.
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setStatus('idle');
 
-    const formData = new FormData(e.currentTarget);
-    
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    const dados = {
+      name: String(formData.get('name') || ''),
+      email: String(formData.get('email') || ''),
+      phone: String(formData.get('phone') || ''),
+      company: String(formData.get('company') || ''),
+      message: String(formData.get('message') || ''),
+      website: String(formData.get('website') || ''), // honeypot
+      aceite_whatsapp: aceite,
+      origem_url: window.location.href,
+    };
+
     try {
-      const response = await fetch("https://formsubmit.co/ajax/contato@atssistemas.ia.br", {
-        method: "POST",
-        body: formData
+      const response = await fetch(LEAD_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dados),
       });
-      
-      const data = await response.json();
-      
-      if (data.success === "true" || response.ok) {
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data.ok === false) throw new Error('webhook');
+      setViaWhatsapp(data.whatsapp === true);
+      setStatus('success');
+      form.reset();
+      setAceite(false);
+    } catch {
+      try {
+        const response = await fetch(EMAIL_FALLBACK_URL, { method: 'POST', body: formData });
+        if (!response.ok) throw new Error('email');
+        setViaWhatsapp(false);
         setStatus('success');
-        (e.target as HTMLFormElement).reset();
-      } else {
+        form.reset();
+        setAceite(false);
+      } catch (error) {
+        console.error(error);
         setStatus('error');
       }
-    } catch (error) {
-      console.error(error);
-      setStatus('error');
     } finally {
       setLoading(false);
     }
@@ -80,6 +103,19 @@ const ContactSection = () => {
               
               <div className="space-y-8">
                 <div className="flex items-start gap-4">
+                  <div className="p-3 rounded-xl bg-[#25D366]/10 border border-[#25D366]/30 text-[#25D366]">
+                    <WhatsAppIcon className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 font-mono">// WHATSAPP</p>
+                    <a href={whatsappLink()} target="_blank" rel="noopener noreferrer" className="text-white text-sm font-semibold hover:text-[#25D366] transition-colors">
+                      +55 54 9146-2117
+                    </a>
+                    <p className="text-xs text-gray-500 mt-1">Resposta na hora com a IA da ATS</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
                   <div className="p-3 rounded-xl bg-neon-cyan/5 border border-neon-cyan/20 text-neon-cyan">
                     <Mail className="w-5 h-5" />
                   </div>
@@ -116,7 +152,10 @@ const ContactSection = () => {
               {/* Decorative top line */}
               <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-cyber-purple to-cyber-pink" />
 
-              {/* Configurações ocultas do FormSubmit */}
+              {/* Anti-spam: campo invisível que pessoas não preenchem */}
+              <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="hidden" />
+
+              {/* Configurações do FormSubmit (usado só como fallback por e-mail) */}
               <input type="hidden" name="_subject" value="Novo contato pelo site ATS!" />
               <input type="hidden" name="_captcha" value="false" />
               <input type="hidden" name="_template" value="table" />
@@ -150,9 +189,11 @@ const ContactSection = () => {
                 <div className="space-y-2">
                   <label htmlFor="phone" className="text-xs font-mono text-gray-500 uppercase tracking-wider">Telefone / WhatsApp</label>
                   <input 
-                    type="tel" 
+                    type="tel"
                     id="phone"
                     name="phone"
+                    required={aceite}
+                    inputMode="tel"
                     className="w-full bg-space-black border border-white/5 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-neon-cyan/50 focus:ring-1 focus:ring-neon-cyan/30 focus:shadow-[0_0_15px_rgba(41,171,226,0.15)] transition-all duration-300"
                     placeholder="(00) 00000-0000"
                   />
@@ -181,6 +222,24 @@ const ContactSection = () => {
                 ></textarea>
               </div>
 
+              <label htmlFor="aceite_whatsapp" className="flex items-start gap-3 mb-8 cursor-pointer select-none group">
+                <input
+                  type="checkbox"
+                  id="aceite_whatsapp"
+                  name="aceite_whatsapp"
+                  checked={aceite}
+                  onChange={(e) => setAceite(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 accent-[#25D366] cursor-pointer"
+                />
+                <span className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors">
+                  <span className="inline-flex items-center gap-1.5 text-white font-semibold">
+                    <WhatsAppIcon className="w-4 h-4 text-[#25D366]" /> Quero receber o retorno pelo WhatsApp
+                  </span>
+                  <br />
+                  Autorizo a ATS a me contatar pelo número informado. Você pode pedir para parar a qualquer momento.
+                </span>
+              </label>
+
               <button 
                 type="submit"
                 disabled={loading}
@@ -206,7 +265,11 @@ const ContactSection = () => {
                   className="mt-4 p-4 bg-cyber-emerald/10 border border-cyber-emerald/30 rounded-xl flex items-center gap-3 text-cyber-emerald text-sm font-mono"
                 >
                   <CheckCircle className="w-5 h-5 flex-shrink-0" />
-                  <p>Protocolo transmitido com sucesso! Retornaremos o contato em breve.</p>
+                  <p>
+                    {viaWhatsapp
+                      ? 'Protocolo transmitido! Nossa IA já está te chamando no WhatsApp. 🚀'
+                      : 'Protocolo transmitido com sucesso! Retornaremos o contato em breve.'}
+                  </p>
                 </motion.div>
               )}
 

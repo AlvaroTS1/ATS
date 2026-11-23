@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import HomeLanding from './pages/HomeLanding';
 import ScrollToHash from './components/ScrollToHash';
 import { WaitlistProvider } from './components/WaitlistProvider';
+import WhatsAppButton from './components/WhatsAppButton';
 
 // A different ROUTE, never rendered alongside HomeLanding — these have no
 // business being in the same bundle the Hero needs to reach first paint.
@@ -36,6 +37,7 @@ function App() {
         />
         <Route path="*" element={<HomeLanding />} />
       </Routes>
+      <WhatsAppButton />
     </WaitlistProvider>
   );
 }
