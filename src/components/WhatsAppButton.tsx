@@ -14,7 +14,7 @@ const WhatsAppButton = () => (
     rel="noopener noreferrer"
     aria-label="Conversar com a ATS no WhatsApp"
     title="Fale com a ATS no WhatsApp"
-    className="fixed bottom-5 right-5 z-[60] isolate group flex items-center gap-2 rounded-full bg-[#25D366] text-white shadow-[0_0_24px_rgba(37,211,102,0.45)] hover:shadow-[0_0_36px_rgba(37,211,102,0.7)] hover:brightness-110 active:scale-95 transition-all duration-300 p-3.5 md:pl-4 md:pr-5"
+    className="fixed bottom-24 right-4 md:bottom-5 md:right-5 z-[60] isolate group flex items-center gap-2 rounded-full bg-[#25D366] text-white shadow-[0_0_24px_rgba(37,211,102,0.45)] hover:shadow-[0_0_36px_rgba(37,211,102,0.7)] hover:brightness-110 active:scale-95 transition-all duration-300 p-3.5 md:pl-4 md:pr-5"
   >
     {/* pulso suave para chamar atenção enquanto acompanha a rolagem */}
     <span aria-hidden="true" className="absolute inset-0 -z-10 rounded-full bg-[#25D366] opacity-40 animate-ping motion-reduce:hidden" />
