@@ -2,16 +2,14 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, MapPin, Send, Loader2, CheckCircle, XCircle, Terminal, Cpu } from 'lucide-react';
 import { WhatsAppIcon } from './WhatsAppButton';
-import { EMAIL_FALLBACK_URL, LEAD_WEBHOOK_URL, WHATSAPP_NUMERO, whatsappLink } from '../lib/contato';
+import { LEAD_WEBHOOK_URL, whatsappLink } from '../lib/contato';
 
 const ContactSection = () => {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  const [viaWhatsapp, setViaWhatsapp] = useState(false);
-  const [aceite, setAceite] = useState(false);
 
-  // O lead vai para o CRM da ATS (n8n). Com o aceite, a IA comercial já responde no WhatsApp.
-  // Se o webhook falhar, o formulário cai para o e-mail (FormSubmit) para não perder o contato.
+  // O contato vai direto para o CRM da ATS (n8n): a IA comercial responde no WhatsApp
+  // informado e avisa o responsável da ATS no WhatsApp com o resumo do que se trata.
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
@@ -21,12 +19,11 @@ const ContactSection = () => {
     const formData = new FormData(form);
     const dados = {
       name: String(formData.get('name') || ''),
-      email: String(formData.get('email') || ''),
       phone: String(formData.get('phone') || ''),
       company: String(formData.get('company') || ''),
       message: String(formData.get('message') || ''),
       website: String(formData.get('website') || ''), // honeypot
-      aceite_whatsapp: aceite,
+      aceite_whatsapp: true, // quem envia pede o retorno neste WhatsApp (aviso abaixo do botão)
       origem_url: window.location.href,
     };
 
@@ -38,22 +35,11 @@ const ContactSection = () => {
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok || data.ok === false) throw new Error('webhook');
-      setViaWhatsapp(data.whatsapp === true);
       setStatus('success');
       form.reset();
-      setAceite(false);
-    } catch {
-      try {
-        const response = await fetch(EMAIL_FALLBACK_URL, { method: 'POST', body: formData });
-        if (!response.ok) throw new Error('email');
-        setViaWhatsapp(false);
-        setStatus('success');
-        form.reset();
-        setAceite(false);
-      } catch (error) {
-        console.error(error);
-        setStatus('error');
-      }
+    } catch (error) {
+      console.error(error);
+      setStatus('error');
     } finally {
       setLoading(false);
     }
@@ -155,10 +141,6 @@ const ContactSection = () => {
               {/* Anti-spam: campo invisível que pessoas não preenchem */}
               <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="hidden" />
 
-              {/* Configurações do FormSubmit (usado só como fallback por e-mail) */}
-              <input type="hidden" name="_subject" value="Novo contato pelo site ATS!" />
-              <input type="hidden" name="_captcha" value="false" />
-              <input type="hidden" name="_template" value="table" />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div className="space-y-2">
@@ -173,31 +155,21 @@ const ContactSection = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="email" className="text-xs font-mono text-gray-500 uppercase tracking-wider">Email Corporativo</label>
-                  <input 
-                    type="email" 
-                    id="email"
-                    name="email"
-                    required
-                    className="w-full bg-space-black border border-white/5 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-neon-cyan/50 focus:ring-1 focus:ring-neon-cyan/30 focus:shadow-[0_0_15px_rgba(41,171,226,0.15)] transition-all duration-300"
-                    placeholder="seu@dominio.com"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div className="space-y-2">
-                  <label htmlFor="phone" className="text-xs font-mono text-gray-500 uppercase tracking-wider">Telefone / WhatsApp</label>
+                  <label htmlFor="phone" className="text-xs font-mono text-gray-500 uppercase tracking-wider">WhatsApp</label>
                   <input 
                     type="tel"
                     id="phone"
                     name="phone"
-                    required={aceite}
+                    required
+                    autoComplete="tel"
                     inputMode="tel"
                     className="w-full bg-space-black border border-white/5 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-neon-cyan/50 focus:ring-1 focus:ring-neon-cyan/30 focus:shadow-[0_0_15px_rgba(41,171,226,0.15)] transition-all duration-300"
-                    placeholder="(00) 00000-0000"
+                    placeholder="(54) 99999-9999"
                   />
                 </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-6 mb-6">
                 <div className="space-y-2">
                   <label htmlFor="company" className="text-xs font-mono text-gray-500 uppercase tracking-wider">Empresa</label>
                   <input 
@@ -222,24 +194,6 @@ const ContactSection = () => {
                 ></textarea>
               </div>
 
-              <label htmlFor="aceite_whatsapp" className="flex items-start gap-3 mb-8 cursor-pointer select-none group">
-                <input
-                  type="checkbox"
-                  id="aceite_whatsapp"
-                  name="aceite_whatsapp"
-                  checked={aceite}
-                  onChange={(e) => setAceite(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 accent-[#25D366] cursor-pointer"
-                />
-                <span className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors">
-                  <span className="inline-flex items-center gap-1.5 text-white font-semibold">
-                    <WhatsAppIcon className="w-4 h-4 text-[#25D366]" /> Quero receber o retorno pelo WhatsApp
-                  </span>
-                  <br />
-                  Autorizo a ATS a me contatar pelo número informado. Você pode pedir para parar a qualquer momento.
-                </span>
-              </label>
-
               <button 
                 type="submit"
                 disabled={loading}
@@ -258,6 +212,11 @@ const ContactSection = () => {
                 )}
               </button>
 
+              <p className="mt-3 flex items-center justify-center gap-1.5 text-center text-xs text-gray-500">
+                <WhatsAppIcon className="w-3.5 h-3.5 text-[#25D366]" />
+                O retorno chega no WhatsApp informado. Para parar, é só responder PARAR.
+              </p>
+
               {status === 'success' && (
                 <motion.div 
                   initial={{ opacity: 0, y: 10 }}
@@ -265,11 +224,7 @@ const ContactSection = () => {
                   className="mt-4 p-4 bg-cyber-emerald/10 border border-cyber-emerald/30 rounded-xl flex items-center gap-3 text-cyber-emerald text-sm font-mono"
                 >
                   <CheckCircle className="w-5 h-5 flex-shrink-0" />
-                  <p>
-                    {viaWhatsapp
-                      ? 'Protocolo transmitido! Nossa IA já está te chamando no WhatsApp. 🚀'
-                      : 'Protocolo transmitido com sucesso! Retornaremos o contato em breve.'}
-                  </p>
+                  <p>Protocolo transmitido! A IA da ATS já está te chamando no WhatsApp. 🚀</p>
                 </motion.div>
               )}
 
@@ -280,7 +235,12 @@ const ContactSection = () => {
                   className="mt-4 p-4 bg-red-500/10 border border-red-500/30 rounded-xl flex items-center gap-3 text-red-400 text-sm font-mono"
                 >
                   <XCircle className="w-5 h-5 flex-shrink-0" />
-                  <p>Falha na transmissão. Por favor, revise a conexão e tente novamente.</p>
+                  <p>
+                    Falha na transmissão. Tente de novo ou{' '}
+                    <a href={whatsappLink()} target="_blank" rel="noopener noreferrer" className="underline text-[#25D366]">
+                      fale direto no WhatsApp
+                    </a>.
+                  </p>
                 </motion.div>
               )}
             </form>
